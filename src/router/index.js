@@ -1,18 +1,23 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Page1 from "@/views/Page1.vue";
-import Page2 from "@/views/Page2.vue";
+import ServerStats from "@/views/ServerStats.vue";
+import BizFlow from "@/views/BizFlow.vue";
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/page1',
-      name: 'page1',
-      component: Page1
+      path: '/status',
+      name: 'status',
+      component: ServerStats
     },
     {
-      path: '/page2',
-      name: 'page2',
-      component: Page2
+      path: '/flow',
+      name: 'flow',
+      component: BizFlow
+    },
+    {
+      path: '/',
+      name: 'home',
+      redirect: '/status'
     }
   ]
 })

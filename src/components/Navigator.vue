@@ -16,14 +16,16 @@ function changeTheme() {
   <Menu :theme="theme" active-name="1" mode="horizontal">
     <div class="menu-left">
       <MenuItem name="1">
+        <RouterLink class="custom-link" to="/status">
         <Icon type="ios-paper"/>
-        Page1
-        <RouterLink to="/page1"/>
+        服务状态
+        </RouterLink>
       </MenuItem>
       <MenuItem name="2">
-        <RouterLink to="/page2"/>
+        <RouterLink class="custom-link" to="/flow">
         <Icon type="ios-people"/>
-        Page2
+        调用流
+        </RouterLink>
       </MenuItem>
     </div>
     <div class="menu-right">
@@ -41,5 +43,18 @@ function changeTheme() {
 .menu-right {
   width: 80px;
   margin: 0 20px 0 auto;
+}
+
+.custom-link {
+  color: inherit; /* 继承父元素的颜色 */
+  text-decoration: none; /* 去掉下划线 */
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.custom-link:hover, .custom-link:focus, .custom-link:active {
+  color: inherit; /* 继承父元素的颜色 */
+  text-decoration: none; /* 去掉下划线 */
 }
 </style>
