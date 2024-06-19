@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import {computed, inject, ref} from 'vue'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { ControlButton, Controls } from '@vue-flow/controls'
@@ -82,7 +82,9 @@ const edges = [
 ]
 
 // our dark mode toggle flag
-const dark = ref(false)
+const theme = inject("theme");
+const dark = computed(() => theme.value === 'dark');
+// const dark = ref(false)
 
 /**
  * This is a Vue Flow event-hook which can be listened to from anywhere you call the composable, instead of only on the main component
@@ -149,9 +151,6 @@ function resetTransform() {
   setViewport({ x: 0, y: 0, zoom: 1 })
 }
 
-function toggleDarkMode() {
-  dark.value = !dark.value
-}
 </script>
 
 <template>
@@ -176,11 +175,6 @@ function toggleDarkMode() {
 
       <ControlButton title="Shuffle Node Positions" @click="updatePos">
         <Icon name="update" />
-      </ControlButton>
-
-      <ControlButton title="Toggle Dark Mode" @click="toggleDarkMode">
-        <Icon v-if="dark" name="sun" />
-        <Icon v-else name="moon" />
       </ControlButton>
 
       <ControlButton title="Log `toObject`" @click="logToObject">
