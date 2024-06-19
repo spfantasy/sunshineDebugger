@@ -10,7 +10,6 @@ provide("env", env);
 
 <template>
   <Navigator/>
-
   <RouterView/>
 </template>
 <style>
