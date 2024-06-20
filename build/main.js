@@ -1,8 +1,10 @@
-import {app, BrowserWindow, ipcMain} from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
-import {spawn} from 'child_process';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
+import { fork } from 'child_process';
+import fetch from 'node-fetch';
 
+// 获取 __filename 和 __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -13,19 +15,21 @@ function createWindow() {
         width: 800,
         height: 600,
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
+            preload: pathToFileURL(path.join(__dirname, 'preload.js')).href,
             contextIsolation: false,
             enableRemoteModule: true,
             nodeIntegration: true
         }
     });
 
-    win.loadFile(path.join(__dirname, '../dist/src/index.html')); // 加载打包后的HTML文件
+    win.loadFile(path.join(__dirname, '../dist/src/index.html'));
+    win.webContents.openDevTools();
 }
 
 app.whenReady().then(() => {
+    console.log('App is ready');
     // 启动后端服务器
-    serverProcess = spawn('node', [path.join(__dirname, '../backend/server.js')], {
+    serverProcess = fork(path.join(__dirname, '../backend/server.js'), [], {
         stdio: 'inherit'
     });
 
@@ -49,7 +53,14 @@ app.on('activate', () => {
     }
 });
 
-ipcMain.handle('fetch-data', async (event, args) => {
-    const response = await fetch('http://localhost:3000/api/data');
-    return await response.json();
+ipcMain.handle('fetch-data', async () => {
+    try {
+        const response = await fetch('http://localhost:3000/api/data');
+        const data = await response.json();
+        console.log('Data fetched from server:', data);
+        return data;
+    } catch (error) {
+        console.error('Error fetching data from server:', error);
+        throw error;
+    }
 });
