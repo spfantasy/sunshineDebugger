@@ -13,7 +13,7 @@ export default defineConfig({
       plugins: [
         terser(),  // 使用 terser 插件压缩代码
         visualizer({
-          open: true,      // 使用 visualizer 插件生成依赖图并自动打开
+          open: false,      // 使用 visualizer 插件生成依赖图并自动打开
           gzipSize: true,  // 显示 gzip 压缩大小
           brotliSize: true // 显示 brotli 压缩大小
         })
