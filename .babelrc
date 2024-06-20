@@ -1,0 +1,12 @@
+{
+  "plugins": [
+    [
+      "import",
+      {
+        "libraryName": "viewuiplus",
+        "libraryDirectory": "es",
+        "style": true
+      }
+    ]
+  ]
+}

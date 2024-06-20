@@ -154,7 +154,6 @@ function resetTransform() {
 </script>
 
 <template>
-  <h1>Page2</h1>
   <VueFlow
       :nodes="nodes"
       :edges="edges"
@@ -182,7 +181,6 @@ function resetTransform() {
       </ControlButton>
     </Controls>
   </VueFlow>
-  <h1>Page2End</h1>
 </template>
 <style>
 
