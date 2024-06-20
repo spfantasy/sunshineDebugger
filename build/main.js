@@ -1,12 +1,15 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
+import { fileURLToPath } from 'url';
 import { fork } from 'child_process';
 import fetch from 'node-fetch';
+import fs from 'fs';
 
 // 获取 __filename 和 __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const config = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../config/env.json"), 'utf8'));
 
 let serverProcess;
 
@@ -15,10 +18,10 @@ function createWindow() {
         width: 800,
         height: 600,
         webPreferences: {
-            preload: pathToFileURL(path.join(__dirname, 'preload.js')).href,
-            contextIsolation: false,
-            enableRemoteModule: true,
-            nodeIntegration: true
+            preload: path.resolve(__dirname, 'preload.js'),
+            contextIsolation: true,
+            enableRemoteModule: false,
+            nodeIntegration: false
         }
     });
 
@@ -30,7 +33,8 @@ app.whenReady().then(() => {
     console.log('App is ready');
     // 启动后端服务器
     serverProcess = fork(path.join(__dirname, '../backend/server.js'), [], {
-        stdio: 'inherit'
+        stdio: 'inherit',
+        env: { PORT: config.backend.port }
     });
 
     createWindow();
@@ -55,7 +59,8 @@ app.on('activate', () => {
 
 ipcMain.handle('fetch-data', async () => {
     try {
-        const response = await fetch('http://localhost:3000/api/data');
+        console.log("fetch-data start");
+        const response = await fetch(`http://localhost:${config.backend.port}/api/data`);
         const data = await response.json();
         console.log('Data fetched from server:', data);
         return data;

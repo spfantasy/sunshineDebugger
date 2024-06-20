@@ -1,7 +1,7 @@
 <script setup>
 import {Icon, MenuItem, Space} from "view-ui-plus";
 import {inject} from "vue";
-import envJson from "../store/env.json"
+import targetEnvJson from "../store/targetEnv.json"
 const theme = inject("theme");
 const env = inject("env");
 function changeTheme() {
@@ -27,7 +27,7 @@ function changeTheme() {
     <div class="menu-right">
       <Space>
         <Select v-model="env" style="width:200px" prefix="md-code-working" filterable>
-          <Option v-for="env in envJson" :value="env.key" >{{ env.name }}</Option>
+          <Option v-for="env in targetEnvJson" :value="env.key" >{{ env.name }}</Option>
         </Select>
         <Button :ghost="theme === 'dark'" :loading="false" shape="circle" type="default"
                 @click="changeTheme">

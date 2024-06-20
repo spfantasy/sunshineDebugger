@@ -54,7 +54,11 @@
       "package.json"
     ],
     "extraFiles": [
-      "backend/**/*"
+      "backend/**/*",
+      {
+        "from": "config/env.json",
+        "to": "env.json"
+      }
     ],
     "directories": {
       "buildResources": "build"

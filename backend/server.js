@@ -2,7 +2,7 @@ import express from 'express';
 import { Sequelize } from 'sequelize';
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT;
 
 const sequelize = new Sequelize('testdb', 'root', 'rootpassword', {
     host: 'localhost',
