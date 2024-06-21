@@ -23,33 +23,33 @@ const fetchTargetData = async () => {
     // 加载右上角外系统环境
     targetEnvChoices.value = await window.electron.fetchData("json", {"filename": "targetEnv.json"});
     targetEnv.value = targetEnvChoices.value[0];
-    defaultTargetEnv.value = targetEnv.value.key;
+    defaultTargetEnv.value = targetEnv.value.value;
     // 加载右上角账号
     const response = await window.electron.fetchData("json", {"filename": "targetAccount.json"});
     targetAccountChoices.value = response.users;
     targetAccount.value = targetAccountChoices.value[0];
-    defaultTargetAccount.value = targetAccount.value.key;
+    defaultTargetAccount.value = targetAccount.value.value;
   } catch (error) {
     console.error('Error fetching data:', error);
   }
 };
 onBeforeMount(fetchTargetData);
 
-const targetEnvOnSelect = (model) => {
+function targetEnvOnSelect(model) {
   for (let i = 0; i < targetEnvChoices.value.length; i++) {
-    if (targetEnvChoices.value[i].key === model.value) {
+    if (targetEnvChoices.value[i].value === model.value) {
       targetEnv.value = targetEnvChoices.value[i];
     }
   }
-};
+}
 
-const targetAccountOnSelect = (model) => {
+function targetAccountOnSelect(model) {
   for (let i = 0; i < targetAccountChoices.value.length; i++) {
-    if (targetAccountChoices.value[i].key === model.value) {
+    if (targetAccountChoices.value[i].value === model.value) {
       targetAccount.value = targetAccountChoices.value[i];
     }
   }
-};
+}
 
 </script>
 <template>
@@ -71,10 +71,10 @@ const targetAccountOnSelect = (model) => {
     <div class="menu-right">
       <Space>
         <Select v-model="defaultTargetEnv" @on-select="targetEnvOnSelect" :style="env.frontend.targetEnvStyle" prefix="md-code-working" filterable>
-          <Option v-for="env in targetEnvChoices" :value="env.key" >{{ env.name }}</Option>
+          <Option v-for="env in targetEnvChoices" :value="env.value" >{{ env.label }}</Option>
         </Select>
         <Select v-model="defaultTargetAccount" @on-select="targetAccountOnSelect" :style="env.frontend.accountStyle" filterable>
-          <Option v-for="account in targetAccountChoices" :value="account.key" >{{ account.name }}</Option>
+          <Option v-for="account in targetAccountChoices" :value="account.value" >{{ account.label }}</Option>
         </Select>
         <Button :ghost="theme === 'dark'" :loading="false" shape="circle" type="default"
                 @click="changeTheme">

@@ -1,21 +1,21 @@
 [
   {
-    "key": "xx",
-    "name": "xx环境 xx",
+    "value": "xx",
+    "label": "第一环境",
     "dns": "xx",
     "mysql": {},
     "redis": {}
   },
   {
-    "key": "yy",
-    "name": "yy环境 yy",
+    "value": "yy",
+    "label": "第二环境",
     "dns": "yy",
     "mysql": {},
     "redis": {}
   },
   {
-    "key": "xy",
-    "name": "xy环境 xy",
+    "value": "xy",
+    "label": "第三环境",
     "dns": "z",
     "mysql": {},
     "redis": {}

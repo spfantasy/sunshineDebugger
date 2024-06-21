@@ -25,8 +25,8 @@ function formatUrl(template, params) {
   <h1>targetAccount: {{targetAccount}}</h1>
   <List border size="large">
     <ListItem v-for="server in serverConfig.services">
-      <Tooltip :content="formatUrl(server.endpoint, {targetEnv: targetEnv.dns})">
-        {{ server.name }}
+      <Tooltip :content="formatUrl(server.value, {targetEnv: targetEnv.dns})">
+        {{ server.label }}
       </Tooltip>
     </ListItem>
   </List>
