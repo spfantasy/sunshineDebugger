@@ -36,13 +36,19 @@ const fetchTargetData = async () => {
 onBeforeMount(fetchTargetData);
 
 const targetEnvOnSelect = (model) => {
-  targetEnv.value = model;
+  for (let i = 0; i < targetEnvChoices.value.length; i++) {
+    if (targetEnvChoices.value[i].key === model.value) {
+      targetEnv.value = targetEnvChoices.value[i];
+    }
+  }
 };
 
 const targetAccountOnSelect = (model) => {
-  targetAccount.value = model;
-  console.log("targetAccountOnSelect");
-  console.log(targetAccount.value);
+  for (let i = 0; i < targetAccountChoices.value.length; i++) {
+    if (targetAccountChoices.value[i].key === model.value) {
+      targetAccount.value = targetAccountChoices.value[i];
+    }
+  }
 };
 
 </script>
