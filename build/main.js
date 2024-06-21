@@ -80,41 +80,14 @@ app.on('activate', () => {
     }
 });
 
-ipcMain.handle('fetch_data', async () => {
+ipcMain.handle('fetch_data', async (event, endpoint, params) => {
     try {
         console.log("fetch-data start");
-        const response = await fetch(`http://localhost:${config.backend.port}/api/data`);
-        const data = await response.json();
-        console.log('Data fetched from server:', data);
-        return data;
+        const response = await axios.post(`http://localhost:${config.backend.port}/api/${endpoint}`, params);
+        console.log('Data fetched from server:', response.data);
+        return response.data;
     } catch (error) {
         console.error('Error fetching data from server:', error);
-        throw error;
-    }
-});
-
-ipcMain.handle('fetch_target_env', async () => {
-    try {
-        console.log("fetch_target_env start");
-        const response = await fetch(`http://localhost:${config.backend.port}/api/target_env`);
-        const data = await response.json();
-        console.log('Env fetched from server:', data);
-        return data;
-    } catch (error) {
-        console.error('Error fetching env from server:', error);
-        throw error;
-    }
-});
-
-ipcMain.handle('fetch_target_account', async () => {
-    try {
-        console.log("fetch_target_account start");
-        const response = await fetch(`http://localhost:${config.backend.port}/api/target_account`);
-        const data = await response.json();
-        console.log('Account fetched from server:', data);
-        return data;
-    } catch (error) {
-        console.error('Error fetching account from server:', error);
         throw error;
     }
 });

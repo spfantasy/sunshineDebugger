@@ -7,7 +7,7 @@ const getData = async () => {
   console.log('getData called');
   try {
     // 调用预加载脚本中暴露的方法
-    const response = await window.electron.fetchData();
+    const response = await window.electron.fetchData("query");
     data.value = response;
     console.log('Data fetched:', response);
   } catch (error) {

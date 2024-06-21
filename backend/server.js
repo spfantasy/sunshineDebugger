@@ -11,12 +11,6 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.PORT;
 
-const targetEnv = path.resolve(__dirname, '../config/targetEnv.json');
-const targetEnvJson = JSON.parse(fs.readFileSync(targetEnv, 'utf8'));
-
-const targetAccount = path.resolve(__dirname, '../config/targetAccount.json');
-const targetAccountFrontend = JSON.parse(fs.readFileSync(targetAccount, 'utf8'));
-
 const sequelize = new Sequelize('testdb', 'root', 'rootpassword', {
     host: 'localhost',
     dialect: 'mysql',
@@ -25,30 +19,17 @@ const sequelize = new Sequelize('testdb', 'root', 'rootpassword', {
 
 app.use(express.json());
 
-// 右上角环境api
-const targetEnvJsonFrontend = targetEnvJson.map(item => {
-    return {
-        key: item.key,
-        name: item.name
-    };
-});
-app.get('/api/target_env', async (req, res) => {
+app.post('/api/json', async (req, res) => {
     try {
-        res.json(targetEnvJsonFrontend);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-// 右上角登陆信息api
-app.get('/api/target_account', async (req, res) => {
-    try {
-        res.json(targetAccountFrontend);
+        const jsonEntity = path.resolve(__dirname, `../config/${req.body.filename}`);
+        const jsonObject = JSON.parse(fs.readFileSync(jsonEntity, 'utf8'));
+        res.json(jsonObject);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-app.get('/api/data', async (req, res) => {
+app.post('/api/query', async (req, res) => {
     try {
         const [results, metadata] = await sequelize.query("SELECT * FROM my_table");
         res.json(results);

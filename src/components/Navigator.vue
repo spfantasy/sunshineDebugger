@@ -14,11 +14,11 @@ function changeTheme() {
 const fetchTargetData = async () => {
   try {
     console.log('fetchTargetEnv called');
-    targetEnvChoices.value = await window.electron.fetchTargetEnv();
+    targetEnvChoices.value = await window.electron.fetchData("json", {"filename": "targetEnv.json"});
     targetEnv.value = targetEnvChoices.value[0].key;
     console.log('Env fetched:', targetEnvChoices.value);
     console.log('fetchTargetAccount called');
-    const response = await window.electron.fetchTargetAccount();
+    const response = await window.electron.fetchData("json", {"filename": "targetAccount.json"});
     targetAccountChoices.value = response.users;
     account.value = response.users[0].key;
     console.log('Account fetched:', targetAccountChoices.value);
