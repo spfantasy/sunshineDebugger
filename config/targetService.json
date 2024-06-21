@@ -7,6 +7,10 @@
     {
       "name": "服务2",
       "endpoint": "www.sina.com/${targetEnv}/health_check"
+    },
+    {
+      "name": "服务3",
+      "endpoint": "www.baidu.com/${targetEnv}/health_check"
     }
   ]
 }

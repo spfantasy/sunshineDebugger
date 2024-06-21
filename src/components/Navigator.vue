@@ -85,7 +85,6 @@ fetchTargetData();
   text-decoration: none; /* 去掉下划线 */
 }
 .fixed-menu {
-  position: fixed;
   top: 0;
   left: 0;
   width: 100%;

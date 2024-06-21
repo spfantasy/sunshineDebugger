@@ -1,7 +1,7 @@
 <script setup>
-import {ref} from "vue";
+import {inject, ref} from "vue";
 import {List, ListItem, Tooltip} from "view-ui-plus";
-
+const targetEnv = inject("targetEnv");
 const serverConfig = ref({"services": []});
 const fetchTargetServices = async () => {
   try {
@@ -12,12 +12,17 @@ const fetchTargetServices = async () => {
   }
 };
 fetchTargetServices();
+
+function formatUrl(template, params) {
+  return template.replace(/\${(.*?)}/g, (match, p1) => params[p1] || '');
+}
+
 </script>
 
 <template>
   <List border size="large">
     <ListItem v-for="server in serverConfig.services">
-      <Tooltip :content="server.endpoint">
+      <Tooltip :content="formatUrl(server.endpoint, {targetEnv: targetEnv})">
         {{ server.name }}
       </Tooltip>
     </ListItem>
