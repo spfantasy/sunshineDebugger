@@ -5,9 +5,11 @@ const theme = inject("theme");
 const targetEnvChoices = ref();
 const targetAccountChoices = ref();
 const targetEnv = inject("targetEnv");
+const targetAccount = inject("targetAccount");
 const defaultTargetEnv = ref();
+const defaultTargetAccount = ref();
 const env = inject("env");
-const account = inject("account");
+
 // 主题切换函数
 function changeTheme() {
   theme.value = theme.value === 'light' ? 'dark' : 'light';
@@ -25,7 +27,8 @@ const fetchTargetData = async () => {
     // 加载右上角账号
     const response = await window.electron.fetchData("json", {"filename": "targetAccount.json"});
     targetAccountChoices.value = response.users;
-    account.value = response.users[0].key;
+    targetAccount.value = targetAccountChoices.value[0];
+    defaultTargetAccount.value = targetAccount.value.key;
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -34,8 +37,12 @@ onBeforeMount(fetchTargetData);
 
 const targetEnvOnSelect = (model) => {
   targetEnv.value = model;
-  console.log("targetEnvOnSelect");
-  console.log(targetEnv.value);
+};
+
+const targetAccountOnSelect = (model) => {
+  targetAccount.value = model;
+  console.log("targetAccountOnSelect");
+  console.log(targetAccount.value);
 };
 
 </script>
@@ -60,7 +67,7 @@ const targetEnvOnSelect = (model) => {
         <Select v-model="defaultTargetEnv" @on-select="targetEnvOnSelect" :style="env.frontend.targetEnvStyle" prefix="md-code-working" filterable>
           <Option v-for="env in targetEnvChoices" :value="env.key" >{{ env.name }}</Option>
         </Select>
-        <Select v-model="account" :style="env.frontend.accountStyle" filterable>
+        <Select v-model="defaultTargetAccount" @on-select="targetAccountOnSelect" :style="env.frontend.accountStyle" filterable>
           <Option v-for="account in targetAccountChoices" :value="account.key" >{{ account.name }}</Option>
         </Select>
         <Button :ghost="theme === 'dark'" :loading="false" shape="circle" type="default"

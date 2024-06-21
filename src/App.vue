@@ -5,11 +5,11 @@ import {provide, ref} from "vue";
 const theme = ref('light');
 const env = ref({"frontend": {}, "backend": {}});
 const targetEnv = ref({});
-const account = ref({});
+const targetAccount = ref({});
 provide("theme", theme);
 provide("env", env);
 provide("targetEnv", targetEnv);
-provide("account", account);
+provide("targetAccount", targetAccount);
 </script>
 
 <template>

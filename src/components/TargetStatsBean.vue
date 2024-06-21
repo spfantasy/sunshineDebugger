@@ -2,7 +2,7 @@
 import {inject, ref} from "vue";
 import {List, ListItem, Tooltip} from "view-ui-plus";
 const targetEnv = inject("targetEnv");
-const account = inject("account");
+const targetAccount = inject("targetAccount");
 const serverConfig = ref({"services": []});
 const fetchTargetServices = async () => {
   try {
@@ -22,7 +22,7 @@ function formatUrl(template, params) {
 
 <template>
   <h1>targetEnv: {{targetEnv}}</h1>
-  <h1>account: {{account}}</h1>
+  <h1>targetAccount: {{targetAccount}}</h1>
   <List border size="large">
     <ListItem v-for="server in serverConfig.services">
       <Tooltip :content="formatUrl(server.endpoint, {targetEnv: targetEnv.dns})">
