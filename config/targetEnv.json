@@ -1,15 +1,22 @@
 [
   {
-    "key": "dd",
-    "name": "开发环境 dd",
-    "dns": "ftms-d.eca.dev.cebbank:28088",
+    "key": "xx",
+    "name": "xx环境 xx",
+    "dns": "xx",
     "mysql": {},
     "redis": {}
   },
   {
-    "key": "tt",
-    "name": "独立主环境 tt",
-    "dns": "ftms-tt.eca.dev.cebbank:28088",
+    "key": "yy",
+    "name": "yy环境 yy",
+    "dns": "yy",
+    "mysql": {},
+    "redis": {}
+  },
+  {
+    "key": "xy",
+    "name": "xy环境 xy",
+    "dns": "z",
     "mysql": {},
     "redis": {}
   }

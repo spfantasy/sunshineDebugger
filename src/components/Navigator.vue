@@ -1,10 +1,11 @@
 <script setup>
 import {Icon, MenuItem, Space, Message} from "view-ui-plus";
-import {inject, ref} from "vue";
+import {inject, onBeforeMount, onMounted, ref} from "vue";
 const theme = inject("theme");
 const targetEnvChoices = ref();
 const targetAccountChoices = ref();
 const targetEnv = inject("targetEnv");
+const defaultTargetEnv = ref();
 const env = inject("env");
 const account = inject("account");
 // 主题切换函数
@@ -19,7 +20,8 @@ const fetchTargetData = async () => {
     console.log(env.value);
     // 加载右上角外系统环境
     targetEnvChoices.value = await window.electron.fetchData("json", {"filename": "targetEnv.json"});
-    targetEnv.value = targetEnvChoices.value[0].key;
+    targetEnv.value = targetEnvChoices.value[0];
+    defaultTargetEnv.value = targetEnv.value.key;
     // 加载右上角账号
     const response = await window.electron.fetchData("json", {"filename": "targetAccount.json"});
     targetAccountChoices.value = response.users;
@@ -28,7 +30,13 @@ const fetchTargetData = async () => {
     console.error('Error fetching data:', error);
   }
 };
-fetchTargetData();
+onBeforeMount(fetchTargetData);
+
+const targetEnvOnSelect = (model) => {
+  targetEnv.value = model;
+  console.log("targetEnvOnSelect");
+  console.log(targetEnv.value);
+};
 
 </script>
 <template>
@@ -49,7 +57,7 @@ fetchTargetData();
     </div>
     <div class="menu-right">
       <Space>
-        <Select v-model="targetEnv" :style="env.frontend.targetEnvStyle" prefix="md-code-working" filterable>
+        <Select v-model="defaultTargetEnv" @on-select="targetEnvOnSelect" :style="env.frontend.targetEnvStyle" prefix="md-code-working" filterable>
           <Option v-for="env in targetEnvChoices" :value="env.key" >{{ env.name }}</Option>
         </Select>
         <Select v-model="account" :style="env.frontend.accountStyle" filterable>
