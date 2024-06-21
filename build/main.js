@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { fork } from 'child_process';
 import fetch from 'node-fetch';
 import fs from 'fs';
+import axios from "axios";
 
 // 获取 __filename 和 __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -29,6 +30,28 @@ function createWindow() {
     win.webContents.openDevTools();
 }
 
+async function checkBackendStatus() {
+    try {
+        const response = await axios.get(`http://localhost:${config.backend.port}/health_check`);
+        return response.status === 200;
+    } catch (error) {
+        return false;
+    }
+}
+
+async function waitForBackend() {
+    const interval = 1000; // 每 1 秒检查一次
+    let backendReady = await checkBackendStatus();
+
+    while (!backendReady) {
+        console.log('Waiting for backend to start...');
+        await new Promise(resolve => setTimeout(resolve, interval));
+        backendReady = await checkBackendStatus();
+    }
+
+    console.log('Backend is up!');
+}
+
 app.whenReady().then(() => {
     console.log('App is ready');
     // 启动后端服务器
@@ -37,7 +60,7 @@ app.whenReady().then(() => {
         env: { PORT: config.backend.port }
     });
 
-    createWindow();
+    waitForBackend().then(() => createWindow());
 });
 
 app.on('window-all-closed', () => {

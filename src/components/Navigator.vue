@@ -2,9 +2,9 @@
 import {Icon, MenuItem, Space, Message} from "view-ui-plus";
 import {inject, ref} from "vue";
 const theme = inject("theme");
-const targetEnvJson = ref();
-const targetAccountJson = ref();
-const env = inject("env");
+const targetEnvChoices = ref();
+const targetAccountChoices = ref();
+const targetEnv = inject("env");
 const account = inject("account");
 // 主题切换函数
 function changeTheme() {
@@ -14,14 +14,14 @@ function changeTheme() {
 const fetchTargetData = async () => {
   try {
     console.log('fetchTargetEnv called');
-    targetEnvJson.value = await window.electron.fetchTargetEnv();
-    env.value = targetEnvJson.value[0].key;
-    console.log('Env fetched:', targetEnvJson.value);
+    targetEnvChoices.value = await window.electron.fetchTargetEnv();
+    targetEnv.value = targetEnvChoices.value[0].key;
+    console.log('Env fetched:', targetEnvChoices.value);
     console.log('fetchTargetAccount called');
     const response = await window.electron.fetchTargetAccount();
-    targetAccountJson.value = response.users;
+    targetAccountChoices.value = response.users;
     account.value = response.users[0].key;
-    console.log('Account fetched:', targetAccountJson.value);
+    console.log('Account fetched:', targetAccountChoices.value);
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -47,11 +47,11 @@ fetchTargetData();
     </div>
     <div class="menu-right">
       <Space>
-        <Select v-model="env" style="width:150px" prefix="md-code-working" filterable>
-          <Option v-for="env in targetEnvJson" :value="env.key" >{{ env.name }}</Option>
+        <Select v-model="targetEnv" style="width:150px" prefix="md-code-working" filterable>
+          <Option v-for="env in targetEnvChoices" :value="env.key" >{{ env.name }}</Option>
         </Select>
-        <Select v-model="account" style="width:100px" filterable>
-          <Option v-for="account in targetAccountJson" :value="account.key" >{{ account.name }}</Option>
+        <Select v-model="account" style="width:80px" filterable>
+          <Option v-for="account in targetAccountChoices" :value="account.key" >{{ account.name }}</Option>
         </Select>
         <Button :ghost="theme === 'dark'" :loading="false" shape="circle" type="default"
                 @click="changeTheme">
