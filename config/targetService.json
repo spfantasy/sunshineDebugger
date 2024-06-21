@@ -1,0 +1,12 @@
+{
+  "services": [
+    {
+      "name": "服务1",
+      "endpoint": "www.sohu.com/${targetEnv}/health_check"
+    },
+    {
+      "name": "服务2",
+      "endpoint": "www.sina.com/${targetEnv}/health_check"
+    }
+  ]
+}
