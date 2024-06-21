@@ -1,12 +1,33 @@
 <script setup>
-import {Icon, MenuItem, Space} from "view-ui-plus";
-import {inject} from "vue";
-import targetEnvJson from "../store/targetEnv.json"
+import {Icon, MenuItem, Space, Message} from "view-ui-plus";
+import {inject, ref} from "vue";
 const theme = inject("theme");
+const targetEnvJson = ref();
+const targetAccountJson = ref();
 const env = inject("env");
+const account = inject("account");
+// 主题切换函数
 function changeTheme() {
   theme.value = theme.value === 'light' ? 'dark' : 'light';
 }
+// 加载右上角外系统环境
+const fetchTargetData = async () => {
+  try {
+    console.log('fetchTargetEnv called');
+    targetEnvJson.value = await window.electron.fetchTargetEnv();
+    env.value = targetEnvJson.value[0].key;
+    console.log('Env fetched:', targetEnvJson.value);
+    console.log('fetchTargetAccount called');
+    const response = await window.electron.fetchTargetAccount();
+    targetAccountJson.value = response.users;
+    account.value = response.users[0].key;
+    console.log('Account fetched:', targetAccountJson.value);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+};
+fetchTargetData();
+
 </script>
 <template>
   <Menu :theme="theme" active-name="1" mode="horizontal" class="fixed-menu">
@@ -26,8 +47,11 @@ function changeTheme() {
     </div>
     <div class="menu-right">
       <Space>
-        <Select v-model="env" style="width:200px" prefix="md-code-working" filterable>
+        <Select v-model="env" style="width:150px" prefix="md-code-working" filterable>
           <Option v-for="env in targetEnvJson" :value="env.key" >{{ env.name }}</Option>
+        </Select>
+        <Select v-model="account" style="width:100px" filterable>
+          <Option v-for="account in targetAccountJson" :value="account.key" >{{ account.name }}</Option>
         </Select>
         <Button :ghost="theme === 'dark'" :loading="false" shape="circle" type="default"
                 @click="changeTheme">

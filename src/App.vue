@@ -3,9 +3,11 @@ import Navigator from "./components/Navigator.vue";
 import {RouterView} from "vue-router";
 import {provide, ref} from "vue";
 const theme = ref('light');
-const env = ref('dd');
+const env = ref('');
+const account = ref('');
 provide("theme", theme);
 provide("env", env);
+provide("account", account);
 </script>
 
 <template>

@@ -57,7 +57,7 @@ app.on('activate', () => {
     }
 });
 
-ipcMain.handle('fetch-data', async () => {
+ipcMain.handle('fetch_data', async () => {
     try {
         console.log("fetch-data start");
         const response = await fetch(`http://localhost:${config.backend.port}/api/data`);
@@ -66,6 +66,32 @@ ipcMain.handle('fetch-data', async () => {
         return data;
     } catch (error) {
         console.error('Error fetching data from server:', error);
+        throw error;
+    }
+});
+
+ipcMain.handle('fetch_target_env', async () => {
+    try {
+        console.log("fetch_target_env start");
+        const response = await fetch(`http://localhost:${config.backend.port}/api/target_env`);
+        const data = await response.json();
+        console.log('Env fetched from server:', data);
+        return data;
+    } catch (error) {
+        console.error('Error fetching env from server:', error);
+        throw error;
+    }
+});
+
+ipcMain.handle('fetch_target_account', async () => {
+    try {
+        console.log("fetch_target_account start");
+        const response = await fetch(`http://localhost:${config.backend.port}/api/target_account`);
+        const data = await response.json();
+        console.log('Account fetched from server:', data);
+        return data;
+    } catch (error) {
+        console.error('Error fetching account from server:', error);
         throw error;
     }
 });
