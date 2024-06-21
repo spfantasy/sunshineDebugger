@@ -4,24 +4,26 @@ import {inject, ref} from "vue";
 const theme = inject("theme");
 const targetEnvChoices = ref();
 const targetAccountChoices = ref();
-const targetEnv = inject("env");
+const targetEnv = inject("targetEnv");
+const env = inject("env");
 const account = inject("account");
 // 主题切换函数
 function changeTheme() {
   theme.value = theme.value === 'light' ? 'dark' : 'light';
 }
-// 加载右上角外系统环境
+
 const fetchTargetData = async () => {
   try {
-    console.log('fetchTargetEnv called');
+    // 加载系统配置
+    env.value =  await window.electron.fetchData("json", {"filename": "env.json"});
+    console.log(env.value);
+    // 加载右上角外系统环境
     targetEnvChoices.value = await window.electron.fetchData("json", {"filename": "targetEnv.json"});
     targetEnv.value = targetEnvChoices.value[0].key;
-    console.log('Env fetched:', targetEnvChoices.value);
-    console.log('fetchTargetAccount called');
+    // 加载右上角账号
     const response = await window.electron.fetchData("json", {"filename": "targetAccount.json"});
     targetAccountChoices.value = response.users;
     account.value = response.users[0].key;
-    console.log('Account fetched:', targetAccountChoices.value);
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -47,10 +49,10 @@ fetchTargetData();
     </div>
     <div class="menu-right">
       <Space>
-        <Select v-model="targetEnv" style="width:150px" prefix="md-code-working" filterable>
+        <Select v-model="targetEnv" :style="env.frontend.targetEnvStyle" prefix="md-code-working" filterable>
           <Option v-for="env in targetEnvChoices" :value="env.key" >{{ env.name }}</Option>
         </Select>
-        <Select v-model="account" style="width:80px" filterable>
+        <Select v-model="account" :style="env.frontend.accountStyle" filterable>
           <Option v-for="account in targetAccountChoices" :value="account.key" >{{ account.name }}</Option>
         </Select>
         <Button :ghost="theme === 'dark'" :loading="false" shape="circle" type="default"

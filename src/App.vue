@@ -4,9 +4,11 @@ import {RouterView} from "vue-router";
 import {provide, ref} from "vue";
 const theme = ref('light');
 const env = ref('');
+const targetEnv = ref('');
 const account = ref('');
 provide("theme", theme);
 provide("env", env);
+provide("targetEnv", targetEnv);
 provide("account", account);
 </script>
 
