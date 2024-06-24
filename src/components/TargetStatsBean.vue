@@ -21,10 +21,9 @@ const fetchTargetServices = async () => {
 async function healthCheck(url) {
   try {
     const response = await axios.get(url,{timeout: env.value.backend.targetStats.TimeoutMilliseconds});
-    return [response.status, new Date().toLocaleString()];
-  } catch (error) {
-    console.error("healthCheck failed: " + error);
-    return [500, new Date().toLocaleString()];
+    return [response.status, new Date().toLocaleString(), ""];
+  } catch (errorInfo) {
+    return [500, new Date().toLocaleString(), errorInfo];
   }
 
 }
@@ -32,11 +31,13 @@ async function healthCheck(url) {
 async function broadcastHealthCheck() {
   const promises = serverConfig.value.services.map(async item => {
     item.status = null;
+    item.errorInfo = null;
     // time.sleep(200);
     await new Promise(r => setTimeout(r, env.value.backend.targetStats.reloadMilliseconds));
-    const [status, lastUpdated] = await healthCheck(item.formatted);
+    const [status, lastUpdated, errorInfo] = await healthCheck(item.formatted);
     item.status = status;
     item.lastUpdated = lastUpdated;
+    item.errorInfo = errorInfo;
   })
   await Promise.all(promises);
 }
@@ -63,10 +64,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <List border size="large" :header="'上次更新时间:' + serverConfig.services[0].lastUpdated">
+  <List border size="large" :header="'上次更新时间: ' + (serverConfig.services.length === 0 ? '更新中' : serverConfig.services[0].lastUpdated)">
     <ListItem v-for="server in serverConfig.services">
       <Tooltip :content="server.formatted">
         <Space>{{ server.label }}</Space>
+      </Tooltip>
+      <Tooltip :content="server.errorInfo">
         <Space>
           <div v-if="server.status == null" >
             <Spin />
@@ -80,8 +83,6 @@ onMounted(() => {
       </Tooltip>
     </ListItem>
   </List>
-  <h1>targetEnv: {{targetEnv}}</h1>
-  <h1>targetAccount: {{targetAccount}}</h1>
 </template>
 
 <style scoped>
