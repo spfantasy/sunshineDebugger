@@ -6,11 +6,11 @@
     },
     {
       "label": "服务2",
-      "endpoint": "www.sina.com/${targetEnv}/health_check"
+      "value": "www.sina.com/${targetEnv}/health_check"
     },
     {
       "label": "服务3",
-      "endpoint": "www.baidu.com/${targetEnv}/health_check"
+      "value": "www.baidu.com/${targetEnv}/health_check"
     }
   ]
 }

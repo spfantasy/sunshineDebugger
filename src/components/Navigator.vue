@@ -56,7 +56,7 @@ function targetAccountOnSelect(model) {
   <Menu :theme="theme" active-name="1" mode="horizontal" class="fixed-menu">
     <div class="menu-left">
       <MenuItem name="1">
-        <RouterLink class="custom-link" to="/status">
+        <RouterLink class="custom-link" to="/">
         <Icon type="ios-paper"/>
         服务状态
         </RouterLink>
@@ -71,10 +71,15 @@ function targetAccountOnSelect(model) {
     <div class="menu-right">
       <Space>
         <Select v-model="defaultTargetEnv" @on-select="targetEnvOnSelect" :style="env.frontend.targetEnvStyle" prefix="md-code-working" filterable>
-          <Option v-for="env in targetEnvChoices" :value="env.value" >{{ env.label }}</Option>
+          <Option v-for="env in targetEnvChoices" :value="env.value" :label="env.label">
+            <span>{{ env.label }}</span>
+            <span style="float:right;color:#ccc">{{ env.value }}</span>
+          </Option>
         </Select>
         <Select v-model="defaultTargetAccount" @on-select="targetAccountOnSelect" :style="env.frontend.accountStyle" filterable>
-          <Option v-for="account in targetAccountChoices" :value="account.value" >{{ account.label }}</Option>
+          <Option v-for="account in targetAccountChoices" :value="account.value" :label="account.label" >
+            <span>{{ account.label }}</span>
+          </Option>
         </Select>
         <Button :ghost="theme === 'dark'" :loading="false" shape="circle" type="default"
                 @click="changeTheme">
