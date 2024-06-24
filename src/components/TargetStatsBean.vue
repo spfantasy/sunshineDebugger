@@ -1,6 +1,6 @@
 <script setup>
 import {inject, onMounted, ref, watch} from "vue";
-import {Icon, List, ListItem, Spin, Tooltip} from "view-ui-plus";
+import {Icon, List, ListItem, Space, Spin, Tooltip} from "view-ui-plus";
 import axios from "axios";
 const targetEnv = inject("targetEnv");
 const targetAccount = inject("targetAccount");
@@ -9,7 +9,7 @@ const env = inject("env");
 const fetchTargetServices = async () => {
   try {
     // 加载服务列表
-    serverConfig.value =  await window.electron.fetchData("json", {"filename": "targetService.json"});
+    serverConfig.value =  await window.electron.fetchData("json", {"filename": "targetService.json5"});
     broadcastServicesFormat();
     await broadcastHealthCheck();
 
@@ -30,14 +30,15 @@ async function healthCheck(url) {
 }
 
 async function broadcastHealthCheck() {
-  for (const item of serverConfig.value.services) {
+  const promises = serverConfig.value.services.map(async item => {
     item.status = null;
     // time.sleep(200);
-    await new Promise(r => setTimeout(r, 200));
+    await new Promise(r => setTimeout(r, env.value.backend.targetStats.reloadMilliseconds));
     const [status, lastUpdated] = await healthCheck(item.formatted);
     item.status = status;
     item.lastUpdated = lastUpdated;
-  }
+  })
+  await Promise.all(promises);
 }
 
 function formatUrl(template, params) {
@@ -62,19 +63,20 @@ onMounted(() => {
 </script>
 
 <template>
-  <List border size="large">
+  <List border size="large" :header="'上次更新时间:' + serverConfig.services[0].lastUpdated">
     <ListItem v-for="server in serverConfig.services">
       <Tooltip :content="server.formatted">
-        <span>{{ server.label }}</span>
-        <div v-if="server.status == null" >
-          <Spin />
-        </div>
-        <div v-if="server.status != null">
-          <Icon v-if="server.status === 0" type="ios-loading" />
-          <Icon v-if="server.status === 200" type="md-checkmark-circle" />
-          <Icon v-if="server.status === 500" type="md-close-circle" />
-          <span>({{ server.lastUpdated }})</span>
-        </div>
+        <Space>{{ server.label }}</Space>
+        <Space>
+          <div v-if="server.status == null" >
+            <Spin />
+          </div>
+          <div v-if="server.status != null">
+            <Icon v-if="server.status === 0" color="orange" type="ios-loading" />
+            <Icon v-if="server.status === 200" color="green" type="md-checkmark-circle" />
+            <Icon v-if="server.status === 500" color="red" type="md-close-circle" />
+          </div>
+        </Space>
       </Tooltip>
     </ListItem>
   </List>

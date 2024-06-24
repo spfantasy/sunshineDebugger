@@ -3,6 +3,7 @@ import { Sequelize } from 'sequelize';
 import fs from 'fs';
 import path from "path";
 import {fileURLToPath} from "url";
+import JSON5 from 'json5';
 
 // 获取 __filename 和 __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -22,7 +23,7 @@ app.use(express.json());
 app.post('/api/json', async (req, res) => {
     try {
         const jsonEntity = path.resolve(__dirname, `../config/${req.body.filename}`);
-        const jsonObject = JSON.parse(fs.readFileSync(jsonEntity, 'utf8'));
+        const jsonObject = JSON5.parse(fs.readFileSync(jsonEntity, 'utf8'));
         res.json(jsonObject);
     } catch (error) {
         res.status(500).json({ error: error.message });

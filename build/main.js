@@ -2,15 +2,15 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { fork } from 'child_process';
-import fetch from 'node-fetch';
 import fs from 'fs';
 import axios from "axios";
+import JSON5 from 'json5';
 
 // 获取 __filename 和 __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const config = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../config/env.json"), 'utf8'));
+const config = JSON5.parse(fs.readFileSync(path.resolve(__dirname, "../config/env.json5"), 'utf8'));
 
 let serverProcess;
 

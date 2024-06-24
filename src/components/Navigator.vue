@@ -18,14 +18,14 @@ function changeTheme() {
 const fetchTargetData = async () => {
   try {
     // 加载系统配置
-    env.value =  await window.electron.fetchData("json", {"filename": "env.json"});
+    env.value =  await window.electron.fetchData("json", {"filename": "env.json5"});
     console.log(env.value);
     // 加载右上角外系统环境
-    targetEnvChoices.value = await window.electron.fetchData("json", {"filename": "targetEnv.json"});
+    targetEnvChoices.value = await window.electron.fetchData("json", {"filename": "targetEnv.json5"});
     targetEnv.value = targetEnvChoices.value[0];
     defaultTargetEnv.value = targetEnv.value.value;
     // 加载右上角账号
-    const response = await window.electron.fetchData("json", {"filename": "targetAccount.json"});
+    const response = await window.electron.fetchData("json", {"filename": "targetAccount.json5"});
     targetAccountChoices.value = response.users;
     targetAccount.value = targetAccountChoices.value[0];
     defaultTargetAccount.value = targetAccount.value.value;
