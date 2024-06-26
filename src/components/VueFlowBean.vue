@@ -13,13 +13,12 @@ import '@vue-flow/node-resizer/dist/style.css';
 import {Drawer, Message} from "view-ui-plus";
 import DynamicContent from "@/components/DynamicContent.vue";
 import JSON5 from 'json5';
+import VueFlowInputNode from "@/components/VueFlowInputNode.vue";
 const { onInit, onNodeDragStop, onConnect, addEdges, setViewport, toObject } = useVueFlow()
 
 const nodes = ref([]);
 const edges = ref([]);
-const theme = inject("theme");
 const targetEnv = inject("targetEnv");
-const dark = computed(() => theme.value === 'dark');
 const openDetail = ref(false);
 const drawerData = ref({"attrs":{}, "contents":[]});
 const ctx = ref({});
@@ -84,6 +83,10 @@ async function renderFlow() {
   }
 }
 
+function logToObject() {
+  console.log(toObject())
+}
+
 /**
  * Resets the current viewport transformation (zoom & pan)
  */
@@ -97,7 +100,6 @@ function resetTransform() {
   <VueFlow
       :nodes="nodes"
       :edges="edges"
-      :class="{ dark }"
       class="basic-flow"
       :default-viewport="{ zoom: 1.5 }"
       :min-zoom="0.2"
@@ -106,7 +108,9 @@ function resetTransform() {
     <Background pattern-color="#aaa" :gap="16" />
 
     <MiniMap />
-
+    <template #node-input="props">
+      <VueFlowInputNode :id="props.id" :data="props.data" />
+    </template>
     <Controls position="top-left">
       <ControlButton title="Reset Transform" @click="resetTransform">
         <Icon name="reset" />
@@ -119,6 +123,9 @@ function resetTransform() {
       <ControlButton title="Log `toObject`" @click="renderFlow">
         <Icon name="log" />
       </ControlButton>
+      <ControlButton title="DEBUG" @click="logToObject">
+        <Icon name="log" />
+      </ControlButton>
     </Controls>
   </VueFlow>
   <Drawer :closable="false" width="640" v-model="openDetail">
@@ -126,12 +133,19 @@ function resetTransform() {
   </Drawer>
 </template>
 <style>
-
-
 .vue-flow__minimap {
   transform: scale(75%);
   transform-origin: bottom right;
 }
+
+.vue-flow__handle {
+  height:10px;
+  width:24px;
+  background:#aaa;
+  border-radius:4px
+}
+
+
 
 .basic-flow.dark {
   background:#2d3748;

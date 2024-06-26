@@ -1,7 +1,6 @@
 <script setup>
 import {Icon, MenuItem, Space, Message} from "view-ui-plus";
 import {inject, onBeforeMount, onMounted, ref} from "vue";
-const theme = inject("theme");
 const targetEnvChoices = ref();
 const targetAccountChoices = ref();
 const targetEnv = inject("targetEnv");
@@ -9,11 +8,6 @@ const targetAccount = inject("targetAccount");
 const defaultTargetEnv = ref();
 const defaultTargetAccount = ref();
 const env = inject("env");
-
-// 主题切换函数
-function changeTheme() {
-  theme.value = theme.value === 'light' ? 'dark' : 'light';
-}
 
 const fetchTargetData = async () => {
   try {
@@ -53,7 +47,7 @@ function targetAccountOnSelect(model) {
 
 </script>
 <template>
-  <Menu :theme="theme" active-name="1" mode="horizontal" class="fixed-menu">
+  <Menu theme="light" active-name="1" mode="horizontal" class="fixed-menu">
     <div class="menu-left">
       <MenuItem name="1">
         <RouterLink class="custom-link" to="/">
@@ -81,11 +75,6 @@ function targetAccountOnSelect(model) {
             <span>{{ account.label }}</span>
           </Option>
         </Select>
-        <Button :ghost="theme === 'dark'" :loading="false" shape="circle" type="default"
-                @click="changeTheme">
-          <Icon v-if="theme === 'dark'" type="ios-sunny"/>
-          <Icon v-if="theme === 'light'" type="ios-moon"/>
-        </Button>
       </Space>
     </div>
   </Menu>

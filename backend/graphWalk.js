@@ -109,6 +109,10 @@ function renderNode(ctx, node) {
             x: 0,
             y: 0,
         },
+        style: {
+            width: '200px',
+            height: '100px',
+        },
         freshness: 1,
         importance: 1,
     })
