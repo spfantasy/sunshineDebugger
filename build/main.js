@@ -18,6 +18,7 @@ function createWindow() {
     const win = new BrowserWindow({
         width: 800,
         height: 600,
+        fullscreen: config.frontend.fullscreen,
         webPreferences: {
             preload: path.resolve(__dirname, 'preload.js'),
             contextIsolation: true,
@@ -82,12 +83,10 @@ app.on('activate', () => {
 
 ipcMain.handle('fetch_data', async (event, endpoint, params) => {
     try {
-        console.log("fetch-data start");
         const response = await axios.post(`http://localhost:${config.backend.port}/api/${endpoint}`, params);
-        console.log('Data fetched from server:', response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching data from server:', error);
-        throw error;
+        throw JSON5.stringify(error.response.data);
     }
 });

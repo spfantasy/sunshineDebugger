@@ -3,8 +3,9 @@
     "value": "xx",
     "label": "第一环境",
     "dns": "xx",
-    "datasource": {
-      "xxxxdb": {
+    "datasource": [
+      {
+        "value": "xxxxdb",
         "type": "sql",
         "params": {
           "dialect": "mysql",
@@ -15,7 +16,7 @@
           "password": "rootpassword"
         }
       }
-    },
+    ],
   },
   {
     "value": "yy",

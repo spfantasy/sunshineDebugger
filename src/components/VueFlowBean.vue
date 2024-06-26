@@ -4,86 +4,26 @@ import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { ControlButton, Controls } from '@vue-flow/controls'
 import { MiniMap } from '@vue-flow/minimap'
-import { MarkerType } from '@vue-flow/core'
 import Icon from './VueFlowIcon.vue'
 import '@vue-flow/core/dist/style.css';
 import '@vue-flow/core/dist/theme-default.css';
 import '@vue-flow/controls/dist/style.css';
 import '@vue-flow/minimap/dist/style.css';
 import '@vue-flow/node-resizer/dist/style.css';
+import {Drawer, Message} from "view-ui-plus";
+import DynamicContent from "@/components/DynamicContent.vue";
+import JSON5 from 'json5';
 const { onInit, onNodeDragStop, onConnect, addEdges, setViewport, toObject } = useVueFlow()
 
-const nodes = [
-  {
-    id: '1',
-    type: 'input',
-    data: { label: 'Node 1' },
-    position: { x: 250, y: 0 },
-    class: 'light',
-  },
-  {
-    id: '2',
-    type: 'output',
-    data: { label: 'Node 2' },
-    position: { x: 100, y: 100 },
-    class: 'light',
-  },
-  {
-    id: '3',
-    data: { label: 'Node 3' },
-    position: { x: 400, y: 100 },
-    class: 'light',
-  },
-  {
-    id: '4',
-    data: { label: 'Node 4' },
-    position: { x: 150, y: 200 },
-    class: 'light',
-  },
-  {
-    id: '5',
-    type: 'output',
-    data: { label: 'Node 5' },
-    position: { x: 300, y: 300 },
-    class: 'light',
-  },
-]
-
-const edges = [
-  {
-    id: 'e1-2',
-    source: '1',
-    target: '2',
-    animated: true,
-  },
-  {
-    id: 'e1-3',
-    source: '1',
-    target: '3',
-    label: 'edge with arrowhead',
-    markerEnd: MarkerType.ArrowClosed,
-  },
-  {
-    id: 'e4-5',
-    type: 'step',
-    source: '4',
-    target: '5',
-    label: 'Node 2',
-    style: { stroke: 'orange' },
-    labelBgStyle: { fill: 'orange' },
-  },
-  {
-    id: 'e3-4',
-    type: 'smoothstep',
-    source: '3',
-    target: '4',
-    label: 'smoothstep-edge',
-  },
-]
-
-// our dark mode toggle flag
+const nodes = ref([]);
+const edges = ref([]);
 const theme = inject("theme");
+const targetEnv = inject("targetEnv");
 const dark = computed(() => theme.value === 'dark');
+const openDetail = ref(false);
+const drawerData = ref({"attrs":{}, "contents":[]});
+const ctx = ref({});
+const env = inject("env");
 // const dark = ref(false)
 
 /**
@@ -110,14 +50,6 @@ onNodeDragStop(({ event, nodes, node }) => {
   console.log('Node Drag Stop', { event, nodes, node })
 })
 
-/**
- * onConnect is called when a new connection is created.
- *
- * You can add additional properties to your new edge (like a type or label) or block the creation altogether by not calling `addEdges`
- */
-onConnect((connection) => {
-  addEdges(connection)
-})
 
 /**
  * To update a node or multiple nodes, you can
@@ -140,8 +72,16 @@ function updatePos() {
 /**
  * toObject transforms your current graph data to an easily persist-able object
  */
-function logToObject() {
-  console.log(toObject())
+async function renderFlow() {
+  try {
+    console.log("render flow ctx="+JSON5.stringify(ctx.value));
+    ctx.value = await window.electron.fetchData("renderFlow", {"env": targetEnv.value.value, "ctx": JSON5.stringify(ctx.value)});
+    nodes.value = ctx.value.nodes;
+    edges.value = ctx.value.edges;
+  } catch (error) {
+    console.error(error.message);
+    Message.error(error.message);
+  }
 }
 
 /**
@@ -176,11 +116,14 @@ function resetTransform() {
         <Icon name="update" />
       </ControlButton>
 
-      <ControlButton title="Log `toObject`" @click="logToObject">
+      <ControlButton title="Log `toObject`" @click="renderFlow">
         <Icon name="log" />
       </ControlButton>
     </Controls>
   </VueFlow>
+  <Drawer :closable="false" width="640" v-model="openDetail">
+    <DynamicContent :json="drawerData"></DynamicContent>
+  </Drawer>
 </template>
 <style>
 

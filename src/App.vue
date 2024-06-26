@@ -2,6 +2,7 @@
 import Navigator from "./components/Navigator.vue";
 import {RouterView} from "vue-router";
 import {provide, ref} from "vue";
+import {Message} from "view-ui-plus";
 const theme = ref('light');
 const env = ref({"frontend": {}, "backend": {}});
 const targetEnv = ref({});
@@ -10,6 +11,7 @@ provide("theme", theme);
 provide("env", env);
 provide("targetEnv", targetEnv);
 provide("targetAccount", targetAccount);
+Message.config({duration: 5});
 </script>
 
 <template>
