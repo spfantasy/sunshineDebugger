@@ -100,7 +100,7 @@ function resetTransform() {
   <VueFlow
       :nodes="nodes"
       :edges="edges"
-      class="basic-flow"
+      class="biz-flow"
       :default-viewport="{ zoom: 1.5 }"
       :min-zoom="0.2"
       :max-zoom="4"
@@ -133,16 +133,43 @@ function resetTransform() {
   </Drawer>
 </template>
 <style>
+/* 小地图 */
 .vue-flow__minimap {
   transform: scale(75%);
   transform-origin: bottom right;
 }
-
+/* 连接点 */
 .vue-flow__handle {
   height:10px;
   width:24px;
   background:#aaa;
   border-radius:4px
 }
+/* node */
+.vue-flow__node {
+  background-color:#f3f4f6
+}
+/* 输入类node */
+.vue-flow__node-input {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 16px;
+  border-radius:8px;
+  box-shadow:0 0 10px #0003
+}
 
+.vue-flow__node-input.selected {
+  box-shadow:0 0 0 2px #ec4899
+}
+
+.vue-flow__node-value input:focus {
+  outline:none;
+  box-shadow:0 0 0 2px #ec4899;
+  transition:box-shadow .2s
+}
+
+.vue-flow__node-input .vue-flow__handle {
+  background-color:#ec4899
+}
 </style>
