@@ -101,21 +101,21 @@ async function buildBean(connections, env, ctx, node) {
 }
 
 function renderNode(ctx, node) {
-    ctx.nodes.push({
-        id: node.value,
-        type: node.type,
-        data: ctx[node.value],
-        position: {
-            x: 0,
-            y: 0,
-        },
-        style: {
-            width: '200px',
-            height: '100px',
-        },
-        freshness: 1,
-        importance: 1,
-    })
+    if (node.type === 'input') {
+        ctx.nodes.push({
+            id: node.value,
+            type: 'input',
+            data: {
+                ...ctx[node.value],
+                locked: false
+            },
+            position: {
+                x: 0,
+                y: 0,
+            },
+        })
+    }
+
     node.parents.forEach(parentValue => ctx.edges.push({
         id: `e${parentValue}-${node.value}`,
         source: parentValue,

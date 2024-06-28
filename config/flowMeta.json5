@@ -1,7 +1,7 @@
 [
   {
     "value": "inputModule1",
-    "label": "模块1-流程1-业务场景1-业务细分场景1",
+    "label": "某个id",
     "type": "input", // comment
     "parents": [],
     "attrs": {
@@ -24,14 +24,14 @@
   },
   {
     "value": "inputModule2",
-    "label": "模块1-流程1-业务场景1-业务细分场景2",
+    "label": "另一个id",
     "type": "input", // comment
     "parents": ["inputModule1"],
     "attrs": {
       "retrievers": [
         {
           "datasource": "xxxxdb",
-          "query": "SELECT `key` AS value, value AS label FROM my_table2 WHERE `key` = ?",
+          "query": "SELECT CAST(id AS CHAR) AS value, value AS label FROM my_table2 WHERE `key` = ?",
           "queryParams": ["ctx.inputModule1.selection"],
           "sink": [
             {

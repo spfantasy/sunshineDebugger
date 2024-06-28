@@ -22,6 +22,7 @@ const targetEnv = inject("targetEnv");
 const openDetail = ref(false);
 const drawerData = ref({"attrs":{}, "contents":[]});
 const ctx = ref({});
+const query = ref({});
 const env = inject("env");
 // const dark = ref(false)
 
@@ -73,10 +74,17 @@ function updatePos() {
  */
 async function renderFlow() {
   try {
-    console.log("render flow ctx="+JSON5.stringify(ctx.value));
-    ctx.value = await window.electron.fetchData("renderFlow", {"env": targetEnv.value.value, "ctx": JSON5.stringify(ctx.value)});
+    nodes.value.forEach(node => {
+      console.log(`node:${node.id} data.locked = ${node.data.locked}`);
+      if (node.data.locked === true) {
+        query.value[node.id] = node.data.selection;
+      }
+    })
+    console.log("render flow query="+JSON5.stringify(query.value));
+    ctx.value = await window.electron.fetchData("renderFlow", {"env": targetEnv.value.value, "ctx": JSON5.stringify(query.value)});
     nodes.value = ctx.value.nodes;
     edges.value = ctx.value.edges;
+    query.value = {};
   } catch (error) {
     console.error(error.message);
     Message.error(error.message);
@@ -98,18 +106,19 @@ function resetTransform() {
 
 <template>
   <VueFlow
-      :nodes="nodes"
-      :edges="edges"
+      v-model:nodes="nodes"
+      v-model:edges="edges"
       class="biz-flow"
       :default-viewport="{ zoom: 1.5 }"
       :min-zoom="0.2"
       :max-zoom="4"
+      fit-view-on-init
   >
     <Background pattern-color="#aaa" :gap="16" />
 
     <MiniMap />
     <template #node-input="props">
-      <VueFlowInputNode :id="props.id" :data="props.data" />
+      <VueFlowInputNode :id="props.id" :data="props.data"/>
     </template>
     <Controls position="top-left">
       <ControlButton title="Reset Transform" @click="resetTransform">
@@ -151,25 +160,15 @@ function resetTransform() {
 }
 /* 输入类node */
 .vue-flow__node-input {
-  display:flex;
-  align-items:center;
   gap:8px;
-  padding:8px 16px;
+  padding: 20px 5px;
   border-radius:8px;
   box-shadow:0 0 10px #0003
 }
 
 .vue-flow__node-input.selected {
-  box-shadow:0 0 0 2px #ec4899
+  box-shadow:0 0 0 2px !important;
 }
 
-.vue-flow__node-value input:focus {
-  outline:none;
-  box-shadow:0 0 0 2px #ec4899;
-  transition:box-shadow .2s
-}
 
-.vue-flow__node-input .vue-flow__handle {
-  background-color:#ec4899
-}
 </style>
