@@ -14,7 +14,7 @@ import {Drawer, Message} from "view-ui-plus";
 import DynamicContent from "@/components/DynamicContent.vue";
 import JSON5 from 'json5';
 import VueFlowInputNode from "@/components/VueFlowInputNode.vue";
-const { onInit, onNodeDragStop, onConnect, addEdges, setViewport, toObject } = useVueFlow()
+const { onInit, onNodeDragStop, addNodes, addEdges, removeNodes, removeEdges, setViewport, toObject } = useVueFlow()
 
 const nodes = ref([]);
 const edges = ref([]);
@@ -75,15 +75,16 @@ function updatePos() {
 async function renderFlow() {
   try {
     nodes.value.forEach(node => {
-      console.log(`node:${node.id} data.locked = ${node.data.locked}`);
       if (node.data.locked === true) {
         query.value[node.id] = node.data.selection;
       }
     })
     console.log("render flow query="+JSON5.stringify(query.value));
-    ctx.value = await window.electron.fetchData("renderFlow", {"env": targetEnv.value.value, "ctx": JSON5.stringify(query.value)});
-    nodes.value = ctx.value.nodes;
-    edges.value = ctx.value.edges;
+    removeNodes(nodes.value);
+    removeEdges(edges.value);
+    ctx.value = await window.electron.fetchData("renderFlow", {"env": targetEnv.value.value, "query": JSON5.stringify(query.value)});
+    addNodes(ctx.value.nodes);
+    addEdges(ctx.value.edges);
     query.value = {};
   } catch (error) {
     console.error(error.message);

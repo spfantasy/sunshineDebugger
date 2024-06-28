@@ -69,7 +69,7 @@ function handleCreate(userDefinedValue) {
   }
   props.data.choices.push({
     value: userDefinedValue,
-    label: "??",
+    label: "?",
   })
 }
 </script>

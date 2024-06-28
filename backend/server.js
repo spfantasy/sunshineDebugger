@@ -60,7 +60,7 @@ if (hasCycle(flowMeta)) {
 }
 app.post('/api/renderFlow', async(req,res) => {
     try {
-        const newContext = await graphWalk(sqlEngines, req.body.env, JSON5.parse(req.body.ctx), flowMeta);
+        const newContext = await graphWalk(sqlEngines, req.body.env, JSON5.parse(req.body.query), flowMeta);
         res.json(newContext);
     } catch (error) {
         console.log(`server.js ${error.message}`)

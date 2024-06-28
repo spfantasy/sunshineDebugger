@@ -1,13 +1,14 @@
 import {evalString, formatString} from "./util.js";
 import JSON5 from 'json5';
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-export default async function graphWalk(connections, env, ctx, nodes) {
+export default async function graphWalk(connections, env, queryParam, nodes) {
     // node.value -> [node.child.value]
     const graph = new Map();
     // node.value -> node.parents.length
     const inDegree = new Map();
     // node.value -> node
     const nodeMap = new Map();
+    const ctx = {};
     ctx.nodes = [];
     ctx.edges = [];
 
@@ -27,7 +28,7 @@ export default async function graphWalk(connections, env, ctx, nodes) {
     // Function to process a node and its children
     async function processNodeAndChildren (nodeValue) {
         const node = nodeMap.get(nodeValue);
-        await buildBean(connections, env, ctx, node);
+        await buildBean(connections, env, ctx, node, queryParam);
 
         // Decrease the in-degree of all children and process them if they have no remaining parents
         const promises = graph.get(nodeValue).map(child => {
@@ -67,7 +68,7 @@ export default async function graphWalk(connections, env, ctx, nodes) {
 }
 
 
-async function buildBean(connections, env, ctx, node) {
+async function buildBean(connections, env, ctx, node, queryParam) {
     try {
         console.log("ctx = " + JSON5.stringify(ctx));
         console.log("node = " + JSON5.stringify(node));
@@ -87,6 +88,21 @@ async function buildBean(connections, env, ctx, node) {
                 if (sinker.if == null || result === true) {
                     console.log(`sinker.statement: ${sinker.statement}`);
                     evalString(sinker.statement, ctx);
+                }
+            }
+        }
+        if (node.type === 'input') {
+            if(ctx[node.value].choices == null) {
+                ctx[node.value].choices = []
+            }
+            // 入参覆盖query选项
+            if (queryParam[node.value] != null) {
+                ctx[node.value].selection = queryParam[node.value];
+                if(ctx[node.value].choices.find(e => e.value === ctx[node.value].selection) == null) {
+                    ctx[node.value].choices.push({
+                        "value": ctx[node.value].selection,
+                        "label": "?",
+                    })
                 }
             }
         }

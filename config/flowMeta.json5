@@ -11,8 +11,7 @@
           "query": "SELECT CAST(id AS CHAR) AS value, CONCAT('标签', string_field) AS label FROM my_table",
           "sink": [
             {
-              "if": "ctx.inputModule1.queryResult.length > 0",
-              "statement": "ctx.inputModule1.selection = ctx.inputModule1.queryResult[0]['value']"
+              "statement": "ctx.inputModule1.selection = ctx.inputModule1.queryResult?.[0]?.value"
             },
             {
               "statement": "ctx.inputModule1.choices = ctx.inputModule1.queryResult",
@@ -35,10 +34,10 @@
           "queryParams": ["ctx.inputModule1.selection"],
           "sink": [
             {
-              "if": "ctx.inputModule2.queryResult.length > 0",
-              "statement": "ctx.inputModule2.selection = ctx.inputModule2.queryResult[0]['value']"
+              "statement": "ctx.inputModule2.selection = ctx.inputModule2?.queryResult?.[0]?.value"
             },
             {
+              "if": "ctx.inputModule2.selection === ctx.inputModule2.selection",
               "statement": "ctx.inputModule2.choices = ctx.inputModule2.queryResult",
             }
           ]
