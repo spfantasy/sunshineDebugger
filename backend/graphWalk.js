@@ -75,7 +75,7 @@ async function buildBean(connections, env, ctx, node, queryParam) {
         // 为bean建立空context数据
         ctx[node.value] = {"label": node.label};
         // 执行retriever部分逻辑
-        for (const retriever of node.attrs.retrievers) {
+        for (const retriever of node.inference.retrievers) {
             const connection = connections[env + ":" + retriever.datasource];
             const query = formatString(retriever.query, ctx, "");
             const params =  (retriever.queryParams || []).map(p => evalString(p, ctx));
@@ -90,6 +90,14 @@ async function buildBean(connections, env, ctx, node, queryParam) {
                     evalString(sinker.statement, ctx);
                 }
             }
+        }
+        // 计算节点是否成功
+        if (node.inference.success != null) {
+            ctx[node.value].success = evalString(node.inference.success, ctx);
+            console.log(`===>Success[${node.value}](${node.inference.success}) => ${ctx[node.value].success}`);
+        } else {
+            console.log(`===>Success[${node.value}](false)`);
+            ctx[node.value].success = false;
         }
         if (node.type === 'input') {
             if(ctx[node.value].choices == null) {
@@ -136,6 +144,6 @@ function renderNode(ctx, node) {
         id: `e${parentValue}-${node.value}`,
         source: parentValue,
         target: node.value,
-        animated: true,
+        animated: !ctx[node.value].success,
     }))
 }

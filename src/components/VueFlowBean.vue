@@ -1,5 +1,5 @@
 <script setup>
-import {computed, inject, ref} from 'vue'
+import {nextTick, inject, ref} from 'vue'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { ControlButton, Controls } from '@vue-flow/controls'
@@ -14,7 +14,10 @@ import {Drawer, Message} from "view-ui-plus";
 import DynamicContent from "@/components/DynamicContent.vue";
 import JSON5 from 'json5';
 import VueFlowInputNode from "@/components/VueFlowInputNode.vue";
-const { onInit, onNodeDragStop, addNodes, addEdges, removeNodes, removeEdges, setViewport, toObject } = useVueFlow()
+import { useLayout } from './VueFlowShuffle.js'
+
+const { onInit, onNodeDragStop, addNodes, addEdges, removeNodes, removeEdges, setViewport, toObject, fitView, updateNode } = useVueFlow()
+const { layout } = useLayout();
 
 const nodes = ref([]);
 const edges = ref([]);
@@ -86,6 +89,14 @@ async function renderFlow() {
     addNodes(ctx.value.nodes);
     addEdges(ctx.value.edges);
     query.value = {};
+    // update node position
+    const positions = layout(ctx.value.nodes, ctx.value.edges);
+    positions.forEach(p => {
+      updateNode(p.id, {position: p.position});
+    })
+    await nextTick(() => {
+      fitView({maxZoom: 2, minZoom: 0.2})
+    })
   } catch (error) {
     console.error(error.message);
     Message.error(error.message);
@@ -113,7 +124,6 @@ function resetTransform() {
       :default-viewport="{ zoom: 1.5 }"
       :min-zoom="0.2"
       :max-zoom="4"
-      fit-view-on-init
   >
     <Background pattern-color="#aaa" :gap="16" />
 
