@@ -31,6 +31,7 @@ const env = inject("env");
 const focus = ref("");
 const focusList = ref([])
 const nodeSearching = ref(false);
+const rendering = ref(false);
 // const dark = ref(false)
 
 /**
@@ -76,6 +77,10 @@ function updatePos() {
   })
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 /**
  * toObject transforms your current graph data to an easily persist-able object
  */
@@ -109,6 +114,13 @@ async function renderFlow() {
     console.error(error.message);
     Message.error(error.message);
   }
+}
+
+async function renderFlowAPI() {
+  rendering.value = true;
+  const minDurationPromise = sleep(1000);
+  await Promise.all([renderFlow(), minDurationPromise]);
+  rendering.value = false;
 }
 
 async function searchNode(keyword) {
@@ -159,7 +171,6 @@ function resetTransform() {
   >
     <Background pattern-color="#aaa" :gap="16" />
 
-    <MiniMap />
     <template #node-input="props">
       <VueFlowInputNode :id="props.id" :data="props.data"/>
     </template>
@@ -167,17 +178,6 @@ function resetTransform() {
       <VueFlowOutputNode :id="props.id" :data="props.data" @render-component="renderDrawer"/>
     </template>
     <Controls position="top-left">
-      <ControlButton title="Reset Transform" @click="resetTransform">
-        <Icon name="reset" />
-      </ControlButton>
-
-      <ControlButton title="Shuffle Node Positions" @click="updatePos">
-        <Icon name="update" />
-      </ControlButton>
-
-      <ControlButton title="Log `toObject`" @click="renderFlow">
-        <Icon name="log" />
-      </ControlButton>
       <ControlButton title="DEBUG" @click="logToObject">
         <Icon name="log" />
       </ControlButton>
@@ -193,6 +193,9 @@ function resetTransform() {
           </Option>
         </Select>
       </Space>
+    </Panel>
+    <Panel position="top-center">
+      <Button size="large" type="primary" shape="circle" icon="ios-search" @click=renderFlowAPI :loading="rendering" />
     </Panel>
   </VueFlow>
   <Drawer :closable="false" width="640" v-model="openDetail">
