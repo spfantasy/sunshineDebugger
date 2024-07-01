@@ -1,6 +1,6 @@
 <script setup>
 import {nextTick, inject, ref} from 'vue'
-import { VueFlow, useVueFlow } from '@vue-flow/core'
+import { VueFlow, useVueFlow, Panel } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { ControlButton, Controls } from '@vue-flow/controls'
 import { MiniMap } from '@vue-flow/minimap'
@@ -10,7 +10,7 @@ import '@vue-flow/core/dist/theme-default.css';
 import '@vue-flow/controls/dist/style.css';
 import '@vue-flow/minimap/dist/style.css';
 import '@vue-flow/node-resizer/dist/style.css';
-import {Drawer, Message} from "view-ui-plus";
+import {Drawer, Message, Space} from "view-ui-plus";
 import DynamicComponent from "@/components/DynamicComponent.vue";
 import JSON5 from 'json5';
 import VueFlowInputNode from "@/components/VueFlowInputNode.vue";
@@ -28,6 +28,33 @@ const drawerData = ref({});
 const ctx = ref({});
 const query = ref({});
 const env = inject("env");
+const focus = ref("");
+const focusList = ref([
+  {
+    value: 'New York',
+    label: 'New York'
+  },
+  {
+    value: 'London',
+    label: 'London'
+  },
+  {
+    value: 'Sydney',
+    label: 'Sydney'
+  },
+  {
+    value: 'Ottawa',
+    label: 'Ottawa'
+  },
+  {
+    value: 'Paris',
+    label: 'Paris'
+  },
+  {
+    value: 'Canberra',
+    label: 'Canberra'
+  }
+])
 // const dark = ref(false)
 
 /**
@@ -156,6 +183,14 @@ function resetTransform() {
         <Icon name="log" />
       </ControlButton>
     </Controls>
+    <Panel position="top-right">
+      <Space>
+        焦点：
+        <Select v-model="focus" prefix="ios-locate-outline" style="width:300px; text-align:left" clearable>
+          <Option v-for="item in focusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+        </Select>
+      </Space>
+    </Panel>
   </VueFlow>
   <Drawer :closable="false" width="640" v-model="openDetail">
     <DynamicComponent :componentData="drawerData"></DynamicComponent>

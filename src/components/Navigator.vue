@@ -57,7 +57,7 @@ function targetAccountOnSelect(model) {
       </MenuItem>
       <MenuItem name="2">
         <RouterLink class="custom-link" to="/flow">
-        <Icon type="ios-people"/>
+        <Icon type="ios-git-merge" />
         调用流
         </RouterLink>
       </MenuItem>
