@@ -129,8 +129,10 @@ function updateFocus(value) {
 }
 
 function renderDrawer(data) {
-  drawerData.value = data;
-  openDetail.value = true;
+  if (data != null) {
+    drawerData.value = data;
+    openDetail.value = true;
+  }
 }
 
 function logToObject() {

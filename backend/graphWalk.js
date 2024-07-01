@@ -25,6 +25,21 @@ class Lock {
         }
     }
 }
+
+function makeFocusSet(focus, nodes) {
+    const focusSet = new Set();
+    const focusQueue = [focus];
+    while (focusQueue.length > 0) {
+        const node = nodes.get(focusQueue.shift());
+        if (node != null) {
+            focusSet.add(node.value);
+            const parents = node.parents || [];
+            parents.forEach(parent => focusQueue.push(parent));
+        }
+    }
+    return focusSet;
+}
+
 export default async function graphWalk(connections, env, queryParam, focus, nodes) {
     // node.value -> [node.child.value]
     const graph = new Map();
@@ -49,6 +64,7 @@ export default async function graphWalk(connections, env, queryParam, focus, nod
             inDegree.set(node.value, inDegree.get(node.value) + 1);
         });
     });
+    const focusSet = makeFocusSet(focus, nodeMap);
     // 对于指定入度的节点，直接覆盖
     nodes.forEach(node => {
         if (node.inDegree != null) {
@@ -58,6 +74,7 @@ export default async function graphWalk(connections, env, queryParam, focus, nod
 
     // Function to process a node and its children
     async function processNodeAndChildren(nodeValue) {
+        focusSet.delete(nodeValue);
         const node = nodeMap.get(nodeValue);
         const isSuccess = await buildBean(connections, env, ctx, node, queryParam);
         if (isSuccess === true) {
@@ -105,6 +122,10 @@ export default async function graphWalk(connections, env, queryParam, focus, nod
 
     // Start processing the queue
     await processNext();
+    // 将未计算但在焦点路径的数据打印出来
+    for (const nodeValue of focusSet) {
+        renderNode(ctx, nodeMap.get(nodeValue));
+    }
     return ctx;
 }
 
@@ -114,7 +135,7 @@ async function buildBean(connections, env, ctx, node, queryParam) {
         console.log("ctx = " + JSON5.stringify(ctx));
         console.log("node = " + JSON5.stringify(node));
         // 为bean建立空context数据
-        ctx[node.value] = {"label": node.label};
+        ctx[node.value] = {};
         // 执行retriever部分逻辑
         for (const retriever of node.inference.retrievers) {
             const connection = connections[env + ":" + retriever.datasource];
@@ -125,9 +146,7 @@ async function buildBean(connections, env, ctx, node, queryParam) {
             ctx[node.value].queryResult = results;
             for (const sinker of retriever.sink) {
                 const result = evalString(sinker.if, ctx);
-                console.log(`sinker.if: ${sinker.if} => ${result}`);
                 if (sinker.if == null || result === true) {
-                    console.log(`sinker.statement: ${sinker.statement}`);
                     evalString(sinker.statement, ctx);
                 }
             }
@@ -135,9 +154,7 @@ async function buildBean(connections, env, ctx, node, queryParam) {
         // 计算节点是否成功
         if (node.inference.success != null) {
             ctx[node.value].success = evalString(node.inference.success, ctx);
-            console.log(`===>Success[${node.value}](${node.inference.success}) => ${ctx[node.value].success}`);
         } else {
-            console.log(`===>Success[${node.value}](false)`);
             ctx[node.value].success = true;
         }
         if (node.type === 'input') {
@@ -169,7 +186,7 @@ async function buildBean(connections, env, ctx, node, queryParam) {
 }
 
 function renderNode(ctx, node) {
-    if (node.circuitBreaker === true && ctx[node.value].success === false) {
+    if (node.circuitBreaker === true && ctx[node.value]?.success !== true) {
         // 断路器启动且节点不生效 =》 跳过rendering
         return;
     }
@@ -179,6 +196,7 @@ function renderNode(ctx, node) {
             type: 'input',
             data: {
                 ...ctx[node.value],
+                label: node.label,
                 locked: false
             },
             position: {
@@ -190,7 +208,10 @@ function renderNode(ctx, node) {
         ctx.nodes.push({
             id: node.value,
             type: 'output',
-            data: ctx[node.value],
+            data: {
+                ...ctx[node.value],
+                label: node.label,
+            },
             position: {
                 x: 0,
                 y: 0,
