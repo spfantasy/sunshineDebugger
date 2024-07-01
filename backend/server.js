@@ -44,15 +44,6 @@ app.post('/api/json', async (req, res) => {
     }
 });
 
-app.post('/api/query', async (req, res) => {
-    try {
-        const [results, metadata] = await sqlEngines[req.body.env+":"+req.body.datasource].query(req.body.query);
-        res.json(results);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
-
 const flowMetaJson = path.resolve(__dirname, '../config/flowMeta.json5');
 const flowMeta = JSON5.parse(fs.readFileSync(flowMetaJson, 'utf8'));
 if (hasCycle(flowMeta)) {
@@ -60,11 +51,32 @@ if (hasCycle(flowMeta)) {
 }
 app.post('/api/renderFlow', async(req,res) => {
     try {
-        const newContext = await graphWalk(sqlEngines, req.body.env, JSON5.parse(req.body.query), flowMeta);
+        const newContext = await graphWalk(
+            sqlEngines,
+            req.body.env,
+            JSON5.parse(req.body.query),
+            req.body.focus,
+            flowMeta);
         res.json(newContext);
     } catch (error) {
         console.log(`server.js ${error.message}`)
         res.status(500).json({ message: error.message, name: error.name, stack: error.stack});
+    }
+});
+
+app.post('/api/searchNode', async (req, res) => {
+    try {
+        res.json(flowMeta
+            .filter(
+                node => node.value.toLowerCase().includes(req.body.keyword.toLowerCase())
+                    || node.label.toLowerCase().includes(req.body.keyword.toLowerCase())
+            ).map(node => ({
+                value: node.value,
+                label: node.label,
+            }))
+        );
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 });
 

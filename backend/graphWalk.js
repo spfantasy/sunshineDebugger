@@ -25,7 +25,7 @@ class Lock {
         }
     }
 }
-export default async function graphWalk(connections, env, queryParam, nodes) {
+export default async function graphWalk(connections, env, queryParam, focus, nodes) {
     // node.value -> [node.child.value]
     const graph = new Map();
     // node.value -> node.parents.length

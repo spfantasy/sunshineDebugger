@@ -29,32 +29,8 @@ const ctx = ref({});
 const query = ref({});
 const env = inject("env");
 const focus = ref("");
-const focusList = ref([
-  {
-    value: 'New York',
-    label: 'New York'
-  },
-  {
-    value: 'London',
-    label: 'London'
-  },
-  {
-    value: 'Sydney',
-    label: 'Sydney'
-  },
-  {
-    value: 'Ottawa',
-    label: 'Ottawa'
-  },
-  {
-    value: 'Paris',
-    label: 'Paris'
-  },
-  {
-    value: 'Canberra',
-    label: 'Canberra'
-  }
-])
+const focusList = ref([])
+const nodeSearching = ref(false);
 // const dark = ref(false)
 
 /**
@@ -113,7 +89,11 @@ async function renderFlow() {
     console.log("render flow query="+JSON5.stringify(query.value));
     removeNodes(nodes.value);
     removeEdges(edges.value);
-    ctx.value = await window.electron.fetchData("renderFlow", {"env": targetEnv.value.value, "query": JSON5.stringify(query.value)});
+    ctx.value = await window.electron.fetchData("renderFlow", {
+      "env": targetEnv.value.value,
+      "query": JSON5.stringify(query.value),
+      "focus": focus.value.value,
+    });
     addNodes(ctx.value.nodes);
     addEdges(ctx.value.edges);
     query.value = {};
@@ -129,6 +109,23 @@ async function renderFlow() {
     console.error(error.message);
     Message.error(error.message);
   }
+}
+
+async function searchNode(keyword) {
+  try {
+    nodeSearching.value = true;
+    focusList.value = await window.electron.fetchData("searchNode", {"keyword": keyword});
+    nodeSearching.value = false;
+  } catch (error) {
+    nodeSearching.value = false;
+    console.error(error.message);
+    Message.error(error.message);
+  }
+}
+
+function updateFocus(value) {
+  focus.value = value;
+  console.log(focus.value);
 }
 
 function renderDrawer(data) {
@@ -186,8 +183,12 @@ function resetTransform() {
     <Panel position="top-right">
       <Space>
         焦点：
-        <Select v-model="focus" prefix="ios-locate-outline" style="width:300px; text-align:left" clearable>
-          <Option v-for="item in focusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+        <Select @on-select="updateFocus" :remote-method="searchNode" :loading="nodeSearching" filterable
+                prefix="ios-locate-outline" style="width:300px; text-align:left" clearable>
+          <Option v-for="item of focusList" :value="item.value" :label="item.label" :key="item.value">
+            <span>{{ item.label }}</span>
+            <span style="float:right;color:#ccc">{{ item.value }}</span>
+          </Option>
         </Select>
       </Space>
     </Panel>
