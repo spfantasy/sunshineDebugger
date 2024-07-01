@@ -2,7 +2,7 @@
   {
     "value": "inputModule1",
     "label": "某个id",
-    "type": "input", // comment
+    "type": "input",
     "parents": [],
     "inference": {
       "retrievers": [
@@ -25,7 +25,7 @@
   {
     "value": "inputModule2",
     "label": "另一个id",
-    "type": "input", // comment
+    "type": "input",
     "parents": ["inputModule1"],
     "inference": {
       "retrievers": [
@@ -45,6 +45,112 @@
         }
       ],
       "success": "ctx.inputModule2.selection != null"
+    },
+  },
+  {
+    "value": "outputModule1",
+    "label": "输出1",
+    "type": "output",
+    "parents": ["inputModule1"],
+    "inference": {
+      "retrievers": [
+        {
+          "datasource": "xxxxdb",
+          "query": "SELECT attr1, attr2 FROM my_table WHERE `id` = ?",
+          "queryParams": ["BigInt(ctx.inputModule1.selection)"],
+          "sink": [
+            {
+              "statement": "ctx.outputModule1.data = ctx.outputModule1.queryResult?.[0]"
+            },
+            {
+              "statement": "ctx.outputModule1.abstract = `${ctx.outputModule1?.data?.attr1}|${ctx.outputModule1?.data?.attr2}`"
+            }
+          ]
+        }
+      ],
+      "component": {
+        "type": 'div',
+        "children": [
+          {
+            "type": "Row",
+            "children": [
+              {
+                "type": "Col",
+                "span": "12",
+                "innerHTML": "`123:${ctx.outputModule1?.data?.attr1}`"
+              },
+              {
+                "type": "Col",
+                "span": "12",
+                "innerHTML": "`456:${ctx.outputModule1?.data?.attr2}`"
+              }
+            ]
+          },
+          {
+            "type": "Row",
+            "children": [
+              {
+                "type": "Col",
+                "span": "24",
+                "innerHTML": "789"
+              }
+            ]
+          }
+        ]
+      },
+      "success": "ctx.outputModule1.data != null",
+    },
+    "circuitBreaker": true // 断路器：success=false时不展示节点且不展示后续节点
+  },
+  {
+    "value": "outputModule2",
+    "label": "输出2",
+    "type": "output",
+    "parents": ["outputModule1", "inputModule2"],
+    "inDegree": 1,
+    "inference": {
+      "retrievers": [
+        {
+          "datasource": "xxxxdb",
+          "query": "SELECT attr1, attr2 FROM my_table WHERE `id` = ?",
+          "queryParams": ["BigInt(ctx.inputModule1.selection)"],
+          "sink": [
+            {
+              "statement": "ctx.outputModule1.data = ctx.outputModule1.queryResult?.[0]"
+            },
+          ]
+        }
+      ],
+      "component": {
+        "type": 'div',
+        "children": [
+          {
+            "type": "Row",
+            "children": [
+              {
+                "type": "Col",
+                "span": "4",
+                "innerHTML": "`123:${ctx.outputModule1?.data?.attr1}`"
+              },
+              {
+                "type": "Col",
+                "span": "20",
+                "innerHTML": "`456:${ctx.outputModule1?.data?.attr2}`"
+              }
+            ]
+          },
+          {
+            "type": "Row",
+            "children": [
+              {
+                "type": "Col",
+                "span": "24",
+                "innerHTML": "789"
+              }
+            ]
+          }
+        ]
+      },
     },
   }
 ]

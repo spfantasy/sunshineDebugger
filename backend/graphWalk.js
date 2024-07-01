@@ -1,11 +1,36 @@
-import {evalString, formatString} from "./util.js";
+import {evalString, formatString, evalObject} from "./util.js";
 import JSON5 from 'json5';
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+class Lock {
+    constructor() {
+        this._locked = false;
+        this._waiting = [];
+    }
+
+    async acquire() {
+        const unlock = () => {
+            const nextResolve = this._waiting.shift();
+            if (nextResolve) {
+                nextResolve(unlock);
+            } else {
+                this._locked = false;
+            }
+        };
+
+        if (this._locked) {
+            return new Promise(resolve => this._waiting.push(resolve)).then(() => unlock);
+        } else {
+            this._locked = true;
+            return Promise.resolve(unlock);
+        }
+    }
+}
 export default async function graphWalk(connections, env, queryParam, nodes) {
     // node.value -> [node.child.value]
     const graph = new Map();
     // node.value -> node.parents.length
     const inDegree = new Map();
+    const inDegreeLock = new Lock();
     // node.value -> node
     const nodeMap = new Map();
     const ctx = {};
@@ -24,24 +49,40 @@ export default async function graphWalk(connections, env, queryParam, nodes) {
             inDegree.set(node.value, inDegree.get(node.value) + 1);
         });
     });
+    // 对于指定入度的节点，直接覆盖
+    nodes.forEach(node => {
+        if (node.inDegree != null) {
+            inDegree.set(node.value, node.inDegree);
+        }
+    })
 
     // Function to process a node and its children
-    async function processNodeAndChildren (nodeValue) {
+    async function processNodeAndChildren(nodeValue) {
         const node = nodeMap.get(nodeValue);
-        await buildBean(connections, env, ctx, node, queryParam);
+        const isSuccess = await buildBean(connections, env, ctx, node, queryParam);
+        if (isSuccess === true) {
+            // Decrease the in-degree of all children and process them if they have no remaining parents
+            const children = graph.get(nodeValue);
+            const promises = [];
 
-        // Decrease the in-degree of all children and process them if they have no remaining parents
-        const promises = graph.get(nodeValue).map(child => {
-            inDegree.set(child, inDegree.get(child) - 1);
-            if (inDegree.get(child) === 0) {
-                processQueue.push(child);
-                return processNext();
-            } else {
-                return Promise.resolve();
+            for (const child of children) {
+                promises.push((async () => {
+                    const unlock = await inDegreeLock.acquire();
+                    const targetDegree = inDegree.get(child) - 1;
+                    inDegree.set(child, targetDegree);
+                    unlock();
+                    if (targetDegree === 0) {
+                        processQueue.push(child);
+                        return processNext();
+                    } else {
+                        return Promise.resolve();
+                    }
+                })());
             }
-        });
-        // 等待所有 Promise 完成
-        await Promise.all(promises);
+
+            // 等待所有 Promise 完成
+            await Promise.all(promises);
+        }
     }
 
     // Queue to manage nodes to be processed
@@ -97,7 +138,7 @@ async function buildBean(connections, env, ctx, node, queryParam) {
             console.log(`===>Success[${node.value}](${node.inference.success}) => ${ctx[node.value].success}`);
         } else {
             console.log(`===>Success[${node.value}](false)`);
-            ctx[node.value].success = false;
+            ctx[node.value].success = true;
         }
         if (node.type === 'input') {
             if(ctx[node.value].choices == null) {
@@ -113,10 +154,13 @@ async function buildBean(connections, env, ctx, node, queryParam) {
                     })
                 }
             }
+        } else {
+            ctx[node.value].component = evalObject(node.inference.component, ctx);
         }
         // 执行drawer 部分逻辑
         ctx[node.value].queryResult = null;
         renderNode(ctx, node);
+        return ctx[node.value].success;
     } catch (error) {
         error.message = `执行节点${node.value}异常` + error.message;
         console.log(error.message);
@@ -125,6 +169,10 @@ async function buildBean(connections, env, ctx, node, queryParam) {
 }
 
 function renderNode(ctx, node) {
+    if (node.circuitBreaker === true && ctx[node.value].success === false) {
+        // 断路器启动且节点不生效 =》 跳过rendering
+        return;
+    }
     if (node.type === 'input') {
         ctx.nodes.push({
             id: node.value,
@@ -138,12 +186,23 @@ function renderNode(ctx, node) {
                 y: 0,
             },
         })
+    } else {
+        ctx.nodes.push({
+            id: node.value,
+            type: 'output',
+            data: ctx[node.value],
+            position: {
+                x: 0,
+                y: 0,
+            },
+        })
     }
 
     node.parents.forEach(parentValue => ctx.edges.push({
         id: `e${parentValue}-${node.value}`,
         source: parentValue,
         target: node.value,
-        animated: !ctx[node.value].success,
+        animated: !ctx[node.value]?.success || !ctx[parentValue]?.success,
+        markerEnd: "arrow"
     }))
 }

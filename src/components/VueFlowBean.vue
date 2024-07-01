@@ -11,10 +11,11 @@ import '@vue-flow/controls/dist/style.css';
 import '@vue-flow/minimap/dist/style.css';
 import '@vue-flow/node-resizer/dist/style.css';
 import {Drawer, Message} from "view-ui-plus";
-import DynamicContent from "@/components/DynamicContent.vue";
+import DynamicComponent from "@/components/DynamicComponent.vue";
 import JSON5 from 'json5';
 import VueFlowInputNode from "@/components/VueFlowInputNode.vue";
 import { useLayout } from './VueFlowShuffle.js'
+import VueFlowOutputNode from "@/components/VueFlowOutputNode.vue";
 
 const { onInit, onNodeDragStop, addNodes, addEdges, removeNodes, removeEdges, setViewport, toObject, fitView, updateNode } = useVueFlow()
 const { layout } = useLayout();
@@ -23,7 +24,7 @@ const nodes = ref([]);
 const edges = ref([]);
 const targetEnv = inject("targetEnv");
 const openDetail = ref(false);
-const drawerData = ref({"attrs":{}, "contents":[]});
+const drawerData = ref({});
 const ctx = ref({});
 const query = ref({});
 const env = inject("env");
@@ -103,6 +104,11 @@ async function renderFlow() {
   }
 }
 
+function renderDrawer(data) {
+  drawerData.value = data;
+  openDetail.value = true;
+}
+
 function logToObject() {
   console.log(toObject())
 }
@@ -131,6 +137,9 @@ function resetTransform() {
     <template #node-input="props">
       <VueFlowInputNode :id="props.id" :data="props.data"/>
     </template>
+    <template #node-output="props">
+      <VueFlowOutputNode :id="props.id" :data="props.data" @render-component="renderDrawer"/>
+    </template>
     <Controls position="top-left">
       <ControlButton title="Reset Transform" @click="resetTransform">
         <Icon name="reset" />
@@ -149,7 +158,7 @@ function resetTransform() {
     </Controls>
   </VueFlow>
   <Drawer :closable="false" width="640" v-model="openDetail">
-    <DynamicContent :json="drawerData"></DynamicContent>
+    <DynamicComponent :componentData="drawerData"></DynamicComponent>
   </Drawer>
 </template>
 <style>

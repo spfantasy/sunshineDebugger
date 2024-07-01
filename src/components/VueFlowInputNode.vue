@@ -75,7 +75,7 @@ function handleCreate(userDefinedValue) {
 </script>
 
 <template>
-  <span class="line" @click="copyToClipboard(selection)">
+  <span class="line" @click="copyToClipboard(selection)" style="color: royalblue">
     {{props.data.label}}
   </span>
   <br/>
