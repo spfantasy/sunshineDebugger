@@ -12,11 +12,19 @@
 
 <script>
 import { defineComponent, computed } from 'vue';
-import {Row, Col} from 'view-ui-plus';
+import {Row, Col, Grid, GridItem, Divider, Ellipsis, Tabs, TabPane, Timeline, TimelineItem, Numeral} from 'view-ui-plus';
 const components = {
   Row,
   Col,
-  // 可以在这里添加更多的自定义组件
+  Grid,
+  GridItem,
+  Divider,
+  Ellipsis,
+  Tabs,
+  TabPane,
+  Timeline,
+  TimelineItem,
+  Numeral
 };
 
 export default defineComponent({
