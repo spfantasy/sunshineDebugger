@@ -56,25 +56,7 @@
     ],
     "extraFiles": [
       "backend/**/*",
-      {
-        "from": "config/env.json",
-        "to": "env.json"
-      },
-      {
-        "from": "config/flowMeta.json",
-        "to": "flowMeta.json"
-      },
-      {
-        "from": "config/targetAccount.json",
-        "to": "targetAccount.json"
-      },
-      {
-        "from": "config/targetEnv.json",
-        "to": "targetEnv.json"
-      },      {
-        "from": "config/targetService.json",
-        "to": "targetService.json"
-      }
+      "config/**/*"
     ],
     "directories": {
       "buildResources": "build"
