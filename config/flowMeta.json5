@@ -106,7 +106,7 @@
     "value": "outputModule2",
     "label": "输出2",
     "type": "output",
-    "parents": ["outputModule1", "inputModule2"],
+    "parents": ["outputModule5", "outputModule4"],
     "inDegree": 1,
     "inference": {
       "retrievers": [
@@ -152,5 +152,25 @@
         ]
       },
     },
+  },
+  {
+    "value": "outputModule3",
+    "label": "输出3",
+    "type": "output",
+    "inference": {
+      "success": "false"
+    }
+  },
+  {
+    "value": "outputModule4",
+    "label": "输出4",
+    "type": "output",
+    "parents": ["outputModule3"],
+  },
+  {
+    "value": "outputModule5",
+    "label": "输出4",
+    "type": "output",
+    "parents": ["outputModule1"],
   }
 ]

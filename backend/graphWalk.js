@@ -28,16 +28,18 @@ class Lock {
 
 function makeFocusSet(focus, nodes) {
     const focusSet = new Set();
+    const focusList = [];
     const focusQueue = [focus];
     while (focusQueue.length > 0) {
         const node = nodes.get(focusQueue.shift());
         if (node != null) {
             focusSet.add(node.value);
+            focusList.push(node.value);
             const parents = node.parents || [];
             parents.forEach(parent => focusQueue.push(parent));
         }
     }
-    return focusSet;
+    return [focusSet, focusList];
 }
 
 export default async function graphWalk(connections, env, queryParam, focus, nodes) {
@@ -59,12 +61,13 @@ export default async function graphWalk(connections, env, queryParam, focus, nod
         nodeMap.set(node.value, node);
     });
     nodes.forEach(node => {
-        node.parents.forEach(parent => {
+        const parents = node.parents || [];
+        parents.forEach(parent => {
             graph.get(parent).push(node.value);
             inDegree.set(node.value, inDegree.get(node.value) + 1);
         });
     });
-    const focusSet = makeFocusSet(focus, nodeMap);
+    const [focusSet, focusList] = makeFocusSet(focus, nodeMap);
     // 对于指定入度的节点，直接覆盖
     nodes.forEach(node => {
         if (node.inDegree != null) {
@@ -122,9 +125,20 @@ export default async function graphWalk(connections, env, queryParam, focus, nod
 
     // Start processing the queue
     await processNext();
-    // 将未计算但在焦点路径的数据打印出来
-    for (const nodeValue of focusSet) {
-        renderNode(ctx, nodeMap.get(nodeValue));
+    // 将未计算但在焦点路径的数据打印出来,按照倒序
+    for (let i = focusList.length - 1; i >= 0; i--) {
+        const focusValue = focusList[i];
+        // 未被剔除
+        if (focusSet.has(focusValue)) {
+            // 存在生成到图中的父节点
+            const parents = nodeMap.get(focusValue)?.parents || [];
+            const parentsExist = parents.some(parentValue => ctx[parentValue] != null);
+            if (parentsExist) {
+                // 节点图中存在
+                ctx[focusValue] = nodeMap.get(focusValue);
+                renderNode(ctx, nodeMap.get(focusValue));
+            }
+        }
     }
     return ctx;
 }
@@ -137,7 +151,7 @@ async function buildBean(connections, env, ctx, node, queryParam) {
         // 为bean建立空context数据
         ctx[node.value] = {};
         // 执行retriever部分逻辑
-        for (const retriever of node.inference.retrievers) {
+        for (const retriever of node?.inference?.retrievers || []) {
             const connection = connections[env + ":" + retriever.datasource];
             const query = formatString(retriever.query, ctx, "");
             const params =  (retriever.queryParams || []).map(p => evalString(p, ctx));
@@ -152,7 +166,7 @@ async function buildBean(connections, env, ctx, node, queryParam) {
             }
         }
         // 计算节点是否成功
-        if (node.inference.success != null) {
+        if (node.inference?.success != null) {
             ctx[node.value].success = evalString(node.inference.success, ctx);
         } else {
             ctx[node.value].success = true;
@@ -172,12 +186,12 @@ async function buildBean(connections, env, ctx, node, queryParam) {
                 }
             }
         } else {
-            ctx[node.value].component = evalObject(node.inference.component, ctx);
+            ctx[node.value].component = evalObject(node.inference?.component, ctx);
         }
         // 执行drawer 部分逻辑
         ctx[node.value].queryResult = null;
         renderNode(ctx, node);
-        return ctx[node.value].success;
+        return ctx[node.value]?.success || false;
     } catch (error) {
         error.message = `执行节点${node.value}异常` + error.message;
         console.log(error.message);
@@ -188,7 +202,7 @@ async function buildBean(connections, env, ctx, node, queryParam) {
 function renderNode(ctx, node) {
     if (node.circuitBreaker === true && ctx[node.value]?.success !== true) {
         // 断路器启动且节点不生效 =》 跳过rendering
-        return;
+        ctx[node.value] = null;
     }
     if (node.type === 'input') {
         ctx.nodes.push({
@@ -219,7 +233,8 @@ function renderNode(ctx, node) {
         })
     }
 
-    node.parents.forEach(parentValue => ctx.edges.push({
+    const parents = node.parents || [];
+    parents.forEach(parentValue => ctx.edges.push({
         id: `e${parentValue}-${node.value}`,
         source: parentValue,
         target: node.value,

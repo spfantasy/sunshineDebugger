@@ -1,5 +1,5 @@
 <script setup>
-import {nextTick, inject, ref} from 'vue'
+import {nextTick, inject, ref, onMounted} from 'vue'
 import { VueFlow, useVueFlow, Panel } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { ControlButton, Controls } from '@vue-flow/controls'
@@ -45,6 +45,7 @@ onInit((vueFlowInstance) => {
   vueFlowInstance.fitView()
 })
 
+onMounted(renderFlow);
 /**
  * onNodeDragStop is called when a node is done being dragged
  *
