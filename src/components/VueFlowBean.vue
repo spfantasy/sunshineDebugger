@@ -4,18 +4,18 @@ import { VueFlow, useVueFlow, Panel } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { ControlButton, Controls } from '@vue-flow/controls'
 import { MiniMap } from '@vue-flow/minimap'
-import Icon from './VueFlowIcon.vue'
 import '@vue-flow/core/dist/style.css';
 import '@vue-flow/core/dist/theme-default.css';
 import '@vue-flow/controls/dist/style.css';
 import '@vue-flow/minimap/dist/style.css';
 import '@vue-flow/node-resizer/dist/style.css';
-import {Drawer, Message, Space} from "view-ui-plus";
+import {Drawer, Message, Space, Icon} from "view-ui-plus";
 import DynamicComponent from "@/components/DynamicComponent.vue";
 import JSON5 from 'json5';
 import VueFlowInputNode from "@/components/VueFlowInputNode.vue";
 import { useLayout } from './VueFlowShuffle.js'
 import VueFlowOutputNode from "@/components/VueFlowOutputNode.vue";
+import VueFlowNodeDetail from "@/components/VueFlowNodeDetail.vue";
 
 const { onInit, onNodeDragStop, addNodes, addEdges, removeNodes, removeEdges, setViewport, toObject, fitView, updateNode } = useVueFlow()
 const { layout } = useLayout();
@@ -32,6 +32,8 @@ const focus = ref("");
 const focusList = ref([])
 const nodeSearching = ref(false);
 const rendering = ref(false);
+const detailActive = ref(false);
+const detailData = ref({});
 // const dark = ref(false)
 
 /**
@@ -159,6 +161,16 @@ function resetTransform() {
   setViewport({ x: 0, y: 0, zoom: 1 })
 }
 
+function addNode() {
+  detailData.value = {};
+  detailActive.value = true;
+}
+
+function modifyNode() {
+  detailData.value = {};
+  detailActive.value = true;
+}
+
 </script>
 
 <template>
@@ -180,7 +192,13 @@ function resetTransform() {
     </template>
     <Controls position="top-left">
       <ControlButton title="DEBUG" @click="logToObject">
-        <Icon name="log" />
+        <Icon type="ios-code-working" />
+      </ControlButton>
+      <ControlButton title="新增" @click="addNode">
+        <Icon type="ios-add" />
+      </ControlButton>
+      <ControlButton title="修改" @click="modifyNode">
+        <Icon type="ios-document-outline" />
       </ControlButton>
     </Controls>
     <Panel position="top-right">
@@ -202,6 +220,9 @@ function resetTransform() {
   <Drawer :closable="false" width="640" v-model="openDetail">
     <DynamicComponent :componentData="drawerData"></DynamicComponent>
   </Drawer>
+  <VueFlowNodeDetail :data="detailData" :active="detailActive"
+                     :allow-cancel="true" :allow-delete="true"
+                     :allow-submit="true" header="testing"/>
 </template>
 <style>
 /* 小地图 */
