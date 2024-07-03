@@ -1,21 +1,19 @@
 import express from 'express';
 import fs from 'fs';
 import path from "path";
-import {fileURLToPath} from "url";
 import JSON5 from 'json5';
 import hasCycle from './graphCheck.js';
 import graphWalk from "./graphWalk.js";
 import mysql from 'mysql2/promise';
 
 // 获取 __filename 和 __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = process.env.CONFIG_DIR;
 
 const app = express();
 const port = process.env.PORT;
 
 const sqlEngines = {};
-const targetEnvJson = path.resolve(__dirname, '../config/targetEnv.json5');
+const targetEnvJson = path.resolve(__dirname, 'config/targetEnv.json5');
 const targetEnv = JSON5.parse(fs.readFileSync(targetEnvJson, 'utf8'));
 for(const env of targetEnv) {
     for(const datasource of env.datasource || []) {
@@ -36,7 +34,7 @@ app.use(express.json());
 
 app.post('/api/json', async (req, res) => {
     try {
-        const jsonEntity = path.resolve(__dirname, `../config/${req.body.filename}`);
+        const jsonEntity = path.resolve(__dirname, `config/${req.body.filename}`);
         const jsonObject = JSON5.parse(fs.readFileSync(jsonEntity, 'utf8'));
         res.json(jsonObject);
     } catch (error) {
@@ -44,7 +42,7 @@ app.post('/api/json', async (req, res) => {
     }
 });
 
-const flowMetaJson = path.resolve(__dirname, '../config/flowMeta.json5');
+const flowMetaJson = path.resolve(__dirname, 'config/flowMeta.json5');
 const flowMeta = JSON5.parse(fs.readFileSync(flowMetaJson, 'utf8'));
 if (hasCycle(flowMeta)) {
     throw "flowMeta.json5 加载异常：数据成环";

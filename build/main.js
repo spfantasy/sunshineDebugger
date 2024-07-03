@@ -1,17 +1,14 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { fork } from 'child_process';
 import fs from 'fs';
 import axios from "axios";
 import JSON5 from 'json5';
 
 // 获取 __filename 和 __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = app.getAppPath();
 
-const config = JSON5.parse(fs.readFileSync(path.resolve(__dirname, "../config/env.json5"), 'utf8'));
-
+let config;
 let serverProcess;
 
 function createWindow() {
@@ -20,14 +17,14 @@ function createWindow() {
         height: 600,
         fullscreen: config.frontend.fullscreen,
         webPreferences: {
-            preload: path.resolve(__dirname, 'preload.js'),
+            preload: path.resolve(__dirname, 'build/preload.js'),
             contextIsolation: true,
             enableRemoteModule: false,
             nodeIntegration: false
         }
     });
 
-    win.loadFile(path.join(__dirname, '../dist/src/index.html'));
+    win.loadFile(path.resolve(__dirname, 'dist/src/index.html'));
     win.webContents.openDevTools();
 }
 
@@ -55,10 +52,15 @@ async function waitForBackend() {
 
 app.whenReady().then(() => {
     console.log('App is ready');
+    console.log('Copy config to user data');
+    config = JSON5.parse(fs.readFileSync(path.resolve(__dirname, "config/env.json5"), 'utf8'));
     // 启动后端服务器
-    serverProcess = fork(path.join(__dirname, '../backend/server.js'), [], {
+    serverProcess = fork(path.resolve(__dirname, 'backend/server.js'), [], {
         stdio: 'inherit',
-        env: { PORT: config.backend.port }
+        env: {
+            PORT: config.backend.port,
+            CONFIG_DIR: app.getAppPath(),
+        }
     });
 
     waitForBackend().then(() => createWindow());
