@@ -1,5 +1,5 @@
 <script setup>
-import {nextTick, inject, ref, onMounted} from 'vue'
+import {nextTick, inject, ref, onMounted, computed} from 'vue'
 import { VueFlow, useVueFlow, Panel } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { ControlButton, Controls } from '@vue-flow/controls'
@@ -16,6 +16,7 @@ import VueFlowInputNode from "@/components/VueFlowInputNode.vue";
 import { useLayout } from './VueFlowShuffle.js'
 import VueFlowOutputNode from "@/components/VueFlowOutputNode.vue";
 import VueFlowNodeDetail from "@/components/VueFlowNodeDetail.vue";
+import {listNode} from "@/components/electronAPI.js";
 
 const { onInit, onNodeDragStop, addNodes, addEdges, removeNodes, removeEdges, setViewport, toObject, fitView, updateNode } = useVueFlow()
 const { layout } = useLayout();
@@ -30,6 +31,11 @@ const query = ref({});
 const env = inject("env");
 const focus = ref("");
 const focusList = ref([])
+const focusValue = computed({
+  get() {
+    return focus.value?.value || "";
+  }
+});
 const nodeSearching = ref(false);
 const rendering = ref(false);
 const detailActive = ref(false);
@@ -126,10 +132,10 @@ async function renderFlowAPI() {
   rendering.value = false;
 }
 
-async function searchNode(keyword) {
+async function searchFocusNode(keyword) {
   try {
     nodeSearching.value = true;
-    focusList.value = await window.electron.fetchData("searchNode", {"keyword": keyword});
+    focusList.value = await listNode(keyword);
     nodeSearching.value = false;
   } catch (error) {
     nodeSearching.value = false;
@@ -204,7 +210,7 @@ function modifyNode() {
     <Panel position="top-right">
       <Space>
         焦点：
-        <Select @on-select="updateFocus" :remote-method="searchNode" :loading="nodeSearching" filterable
+        <Select @on-select="updateFocus" :remote-method="searchFocusNode" :loading="nodeSearching" filterable
                 prefix="ios-locate-outline" style="width:300px; text-align:left" clearable>
           <Option v-for="item of focusList" :value="item.value" :label="item.label" :key="item.value">
             <span>{{ item.label }}</span>
@@ -220,9 +226,9 @@ function modifyNode() {
   <Drawer :closable="false" width="640" v-model="openDetail">
     <DynamicComponent :componentData="drawerData"></DynamicComponent>
   </Drawer>
-  <VueFlowNodeDetail :data="detailData" :active="detailActive"
+  <VueFlowNodeDetail :node-value="focusValue" :active="detailActive"
                      :allow-cancel="true" :allow-delete="true"
-                     :allow-submit="true" header="testing"/>
+                     :allow-submit="true" header="testing" />
 </template>
 <style>
 /* 小地图 */

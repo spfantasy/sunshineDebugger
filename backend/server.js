@@ -62,7 +62,7 @@ app.post('/api/renderFlow', async(req,res) => {
     }
 });
 
-app.post('/api/searchNode', async (req, res) => {
+app.post('/api/listNode', async (req, res) => {
     try {
         res.json(flowMeta
             .filter(
@@ -73,6 +73,14 @@ app.post('/api/searchNode', async (req, res) => {
                 label: node.label,
             }))
         );
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+app.post('/api/getNode', async (req, res) => {
+    try {
+        res.json(flowMeta.filter(node => node.value.toLowerCase() === req.body.keyword.toLowerCase())[0]);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
