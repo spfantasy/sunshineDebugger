@@ -1,6 +1,7 @@
 <script setup>
 import {Icon, MenuItem, Space, Message} from "view-ui-plus";
 import {inject, onBeforeMount, onMounted, ref} from "vue";
+import {fetchJson} from "@/components/electronAPI.js";
 const targetEnvChoices = ref();
 const targetAccountChoices = ref();
 const targetEnv = inject("targetEnv");
@@ -15,7 +16,7 @@ const fetchTargetData = async () => {
     env.value =  await window.electron.fetchData("json", {"filename": "env.json5"});
     console.log(env.value);
     // 加载右上角外系统环境
-    targetEnvChoices.value = await window.electron.fetchData("json", {"filename": "targetEnv.json5"});
+    targetEnvChoices.value = await fetchJson("targetEnv.json5");
     targetEnv.value = targetEnvChoices.value[0];
     defaultTargetEnv.value = targetEnv.value.value;
     // 加载右上角账号

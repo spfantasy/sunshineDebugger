@@ -6,6 +6,7 @@
     "datasource": [
       {
         "value": "xxxxdb",
+        "label": "FTMS数据库",
         "type": "sql",
         "params": {
           "dialect": "mysql",

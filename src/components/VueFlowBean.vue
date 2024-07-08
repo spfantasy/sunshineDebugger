@@ -167,12 +167,12 @@ function resetTransform() {
   setViewport({ x: 0, y: 0, zoom: 1 })
 }
 
-function addNode() {
+function addCustomNode() {
   detailData.value = {};
   detailActive.value = true;
 }
 
-function modifyNode() {
+function modifyCustomNode() {
   detailData.value = {};
   detailActive.value = true;
 }
@@ -200,10 +200,10 @@ function modifyNode() {
       <ControlButton title="DEBUG" @click="logToObject">
         <Icon type="ios-code-working" />
       </ControlButton>
-      <ControlButton title="新增" @click="addNode">
+      <ControlButton title="新增" @click="addCustomNode">
         <Icon type="ios-add" />
       </ControlButton>
-      <ControlButton title="修改" @click="modifyNode">
+      <ControlButton title="修改" @click="modifyCustomNode">
         <Icon type="ios-document-outline" />
       </ControlButton>
     </Controls>

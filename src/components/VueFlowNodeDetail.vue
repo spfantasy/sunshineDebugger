@@ -1,5 +1,6 @@
 <script setup>
 import {
+  Card,
   Divider,
   FormItem,
   Icon,
@@ -12,18 +13,17 @@ import {
   Space,
   Switch, Tooltip
 } from "view-ui-plus";
-import {ref, reactive, computed, onMounted} from "vue";
+import {ref, reactive, computed, onMounted, inject} from "vue";
 import Codemirror from "codemirror-editor-vue3";
 import "codemirror/theme/yeti.css"
 import jsonlint from "jsonlint-mod";
-// language json or js
 import "codemirror/mode/javascript/javascript.js";
 import "codemirror/addon/lint/lint.css";
 import "codemirror/addon/lint/lint.js";
 import "codemirror/addon/lint/json-lint";
 
 import JSON5 from "json5";
-import {getNode, listNode} from "@/components/electronAPI.js";
+import {fetchJson, getNode, listNode} from "@/components/electronAPI.js";
 
 window.jsonlint = jsonlint;
 
@@ -53,7 +53,7 @@ const props = defineProps({
     required: true,
   },
 })
-onMounted(() => {
+onMounted(async () => {
   if (props.nodeValue === "") {
     data.value =   {
       value: null,
@@ -77,6 +77,18 @@ const jsonError = ref("");
 const loading = ref(false);
 const rules = ref({});
 const parentList = ref([]);
+const targetEnv = inject("targetEnv");
+const datasourceChoices = computed({
+  get() {
+    const list = targetEnv.value?.datasource || [];
+    return list.map((item) => {
+      return {
+        value: item.value,
+        label: item.label,
+      }
+    });
+  }
+})
 const exampleComponent = ref({
   "type": 'div',
   "children": [
@@ -132,59 +144,47 @@ const inDegree = computed({
     }
   }
 })
-// const componentString = computed({
-//   get() {
-//     return JSON5.stringify(data.value.inference?.component || {}, null, 2);
-//   },
-//   set(newValue) {
-//     try {
-//       data.value.inference.component = JSON5.parse(newValue);
-//       jsonError.value = null;
-//     } catch (e) {
-//       jsonError.value = e.message;
-//     }
-//   }
-// });
-const componentString = ref(`{
-      "compilerOptions": {
-        "baseUrl": ".",
-        "outDir": "temp",
-        "sourceMap": false,
-        "target": "es2016",
-        "newLine": "LF",
-        "useDefineForClassFields": false,
-        "module": "esnext",
-        "moduleResolution": "bundler",
-        "allowJs": true,
-        "strict": true,
-        "noUnusedLocals": true,
-        "experimentalDecorators": true,
-        "resolveJsonModule": true,
-        "isolatedModules": true,
-        "skipLibCheck": true,
-        "esModuleInterop": true,
-        "removeComments": false,
-        "jsx": "preserve",
-        "lib": ["es2016", "dom"],
-        "types": ["vitest/globals", "puppeteer", "node"],
-        "rootDir": ".",
-        "paths": {
-          "@vue/compat": ["packages/vue-compat/src"],
-          "@vue/*": ["packages/*/src"],
-          "vue": ["packages/vue/src"]
-        }
-      },
-      "include": [
-        "packages/global.d.ts",
-        "packages/*/src",
-        "packages/runtime-dom/types/jsx.d.ts",
-        "packages/*/__tests__",
-        "packages/dts-test",
-        "packages/vue/jsx-runtime",
-        "scripts/*",
-        "rollup.*.js"
-      ]
-    }`);
+const componentString = computed({
+  get() {
+    // 由于linter不支持JSON5，所以序列化为JSON
+    return JSON.stringify(data.value.inference?.component || {}, null, 2);
+  },
+  set(newValue) {
+    // 前端写入JSON5的字符串后可以成功解析为对象，但前端展示为JSON格式
+    try {
+      data.value.inference.component = JSON5.parse(newValue);
+      jsonError.value = null;
+    } catch (e) {
+      jsonError.value = e.message;
+    }
+  }
+});
+const isSuccessExpression = computed({
+  get() {
+    return data.value?.inference?.success
+  },
+  set(newValue) {
+    if (newValue === undefined || newValue === null || newValue === "") {
+      data.value.inference.success = null;
+    } else {
+      data.value.inference.success = newValue;
+    }
+  }
+})
+const successExpressionSwitchOrigin = ref(false);
+const successExpressionSwitch = computed({
+  get() {
+    return successExpressionSwitchOrigin.value;
+  },
+  set(newValue) {
+    successExpressionSwitchOrigin.value = newValue;
+    console.log(successExpressionSwitchOrigin.value);
+    if (newValue === false) {
+      isSuccessExpression.value = null;
+    }
+  }
+})
+
 function enableInDegree() {
   inDegree.value = data.value.parents?.length || 0;
 }
@@ -210,7 +210,23 @@ async function searchParentNode(keyword) {
   }
 }
 
+async function appendRetrievers() {
+  if (data.value.inference == null) {
+    data.value.inference = {}
+  }
+  if (data.value.inference.retrievers == null) {
+    data.value.inference.retrievers = []
+  }
+  data.value.inference.retrievers.push({
+    datasource: null,
+    query: null,
+    sink: [],
+  })
+}
 
+async function popRetrievers() {
+  data.value.inference.retrievers.pop();
+}
 
 function submit() {
   console.log(data.value);
@@ -238,7 +254,7 @@ async function debug(content, instance) {
 </script>
 
 <template>
-  <Modal v-if="props.active" v-model="data" width="720" :mask-closable="false">
+  <Modal v-model="props.active" width="720" :mask-closable="false">
     <template #header>
       <p style="text-align:center">
         <span>{{ props.header }}</span>
@@ -246,7 +262,8 @@ async function debug(content, instance) {
     </template>
     <div>
       <Form :model="data" :rules="rules" :label-width="80">
-        <FormItem prop="value" label="节点id">
+        <FormItem prop="value" label="节点id"
+                  :rules="[{ required: true, pattern: '^[a-zA-Z0-9]*$', message: '节点id不能为空，只能由字母数字组成', trigger: 'change' }]">
           <Space>
             <Input v-model="data.value" placeholder="inputNodeX" style="width: 300px"/>
             <Tooltip max-width="200" content="节点主键，请输入只包含字母数字的内容" placement="top">
@@ -254,7 +271,8 @@ async function debug(content, instance) {
             </Tooltip>
           </Space>
         </FormItem>
-        <FormItem prop="label" label="节点名称">
+        <FormItem prop="label" label="节点名称"
+                  :rules="[{ required: true, pattern: '^[a-zA-Z0-9\u4E00-\u9FFF-]*$', message: '节点名称不能为空,且不包含-以外的特殊符号', trigger: 'change' }]">
           <Space>
             <Input v-model="data.label" placeholder="模块-场景-子模块-流程" style="width: 300px"/>
             <Tooltip max-width="200" content="节点中文名称，如‘模块-场景-子模块-流程’" placement="top">
@@ -310,63 +328,65 @@ async function debug(content, instance) {
         <FormItem>
           <Row>
             <Col span="6">
-              <Button type="dashed" icon="md-add">新增推断</Button>
+              <Button type="dashed" icon="md-add" @click="appendRetrievers">新增读写</Button>
             </Col>
             <Col span="6">
-              <Button type="error" icon="md-trash">删除推断</Button>
+              <Button type="error" icon="md-trash" @click="popRetrievers" v-if="data.inference?.retrievers?.length > 0">删除读写</Button>
             </Col>
           </Row>
         </FormItem>
-        <template v-for="(retriever, i1) in data.retrievers">
-          <FormItem label="数据源" :prop="'inference.retrievers.' + i1 + '.datasource'">
-            <Space>
-              <Select v-model="retriever.datasource" style="width: 300px">
-                <Option value="beijing">New York</Option>
-                <Option value="shanghai">London</Option>
-                <Option value="shenzhen">Sydney</Option>
-              </Select>
-              <Icon type="ios-help-circle"/>
-            </Space>
-          </FormItem>
-          <FormItem label="查询语句" :prop="'inference.retrievers.' + i1 + '.query'">
-            <Space>
-              <Input v-model="retriever.query" placeholder="default size"/>
-              <Icon type="ios-help-circle"/>
-            </Space>
-          </FormItem>
-          <FormItem label="查询参数" :prop="'inference.retrievers.' + i1 + '.queryParams'">
-            <Space>
-              <Select v-model="retriever.query" multiple style="width:500px" filterable allow-create
-                      @on-create="handleCreate1">
-              </Select>
-              <Icon type="ios-help-circle"/>
-            </Space>
-          </FormItem>
-          <template v-for="(sinker, i2) in retriever.sink">
-            <Space>
-              <FormItem label="写入" :prop="'inference.retrievers.' + i1 + '.sink.' + i2 + '.statement'">
-                <Input v-model="sinker.statement" placeholder=""/>
-                <Switch size="large">
-                  <template #open>
-                    <Icon type="ios-arrow-down"/>
-                  </template>
-                  <template #close>
-                    <Icon type="ios-arrow-back"/>
-                  </template>
-                </Switch>
+        <Space direction="vertical">
+          <template v-for="(retriever, i1) in data.inference.retrievers">
+            <Card>
+              <FormItem label="数据源" :prop="'inference.retrievers.' + i1 + '.datasource'"
+                        :rules="[{ required: true, message: '数据源不能为空', trigger: 'change' }]">
+                <Space>
+                  <Select v-model="retriever.datasource" style="width: 300px">
+                    <Option v-for="(option, index) in datasourceChoices" :value="option.value" :key="index">{{option.label}}</Option>
+                  </Select>
+                  <Tooltip max-width="200" content="配置文件中当前环境的数据源(MYSQL/REDIS/...)" placement="top">
+                    <Icon type="ios-help-circle"/>
+                  </Tooltip>
+                </Space>
               </FormItem>
-              <FormItem label="当" :prop="'inference.retrievers.' + i1 + '.sink.' + i2 + '.if'">
-                <Input v-model="sinker.if" placeholder=""/>
+              <FormItem label="查询语句" :prop="'inference.retrievers.' + i1 + '.query'">
+                <Space>
+                  <Input v-model="retriever.query" style="width:400px" type="textarea"
+                         placeholder="SELECT CAST(id AS CHAR) AS value, CONCAT('标签', string_field) AS label FROM my_table WHERE `key` = ?"/>
+                  <Tooltip max-width="200" content="用`?`替换变量的查询语句" placement="top">
+                    <Icon type="ios-help-circle"/>
+                  </Tooltip>
+                </Space>
               </FormItem>
-            </Space>
+              <FormItem label="查询参数" :prop="'inference.retrievers.' + i1 + '.queryParams'">
+                <Space>
+                  <Select v-model="retriever.queryParams" multiple style="width:300px" filterable allow-create/>
+                  <Tooltip max-width="200" content="变量名称或表达式， 如ctx.inputModule1.selection 或1+1" placement="top">
+                    <Icon type="ios-help-circle"/>
+                  </Tooltip>
+                </Space>
+              </FormItem>
+              <template v-for="(sinker, i2) in retriever.sink">
+                <Space>
+                  <FormItem label="写入" :prop="'inference.retrievers.' + i1 + '.sink.' + i2 + '.statement'">
+                    <Input v-model="sinker.statement" placeholder=""/>
+                    <Switch size="large">
+                      <template #open>
+                        <Icon type="ios-arrow-down"/>
+                      </template>
+                      <template #close>
+                        <Icon type="ios-arrow-back"/>
+                      </template>
+                    </Switch>
+                  </FormItem>
+                  <FormItem label="当" :prop="'inference.retrievers.' + i1 + '.sink.' + i2 + '.if'">
+                    <Input v-model="sinker.if" placeholder=""/>
+                  </FormItem>
+                </Space>
+              </template>
+            </Card>
           </template>
-        </template>
-        <FormItem prop="inference.success" label="是否成功">
-          <Space>
-            <Input v-model="data.inference.success" placeholder="为空默认为‘成功’"/>
-            <Icon type="ios-help-circle"/>
-          </Space>
-        </FormItem>
+        </Space>
         <FormItem prop="inference.component" label="边栏" v-if="data.type === 'output'">
           <Codemirror
               v-model:value="componentString"
@@ -380,6 +400,20 @@ async function debug(content, instance) {
           <Tooltip max-width="200" content="用于渲染边栏的内容，支持view-ui-plus的Row, Col, Grid, GridItem, Divider, Ellipsis, Tabs, TabPane, Timeline, TimelineItem, Numeral组件，以及html默认组件。请参考示例中的逻辑" placement="top">
             <Icon type="ios-help-circle"/>
           </Tooltip>
+        </FormItem>
+        <FormItem prop="inference.success" label="是否成功">
+          <Space>
+            <Switch size="large" true-color="#ffa000" false-color="#02ba00" v-model="successExpressionSwitch" >
+              <template #open>
+                <span>公式</span>
+              </template>
+              <template #close>
+                <span>总是</span>
+              </template>
+            </Switch>
+            <Input style="width: 400px" v-if="successExpressionSwitch" v-model="isSuccessExpression" placeholder="1 + 1 === 2 或 ctx.currentNode.a.b === 'something'"/>
+            <Icon type="ios-help-circle"/>
+          </Space>
         </FormItem>
       </Form>
     </div>
