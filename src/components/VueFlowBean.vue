@@ -16,7 +16,7 @@ import VueFlowInputNode from "@/components/VueFlowInputNode.vue";
 import { useLayout } from './VueFlowShuffle.js'
 import VueFlowOutputNode from "@/components/VueFlowOutputNode.vue";
 import VueFlowNodeDetail from "@/components/VueFlowNodeDetail.vue";
-import {listNode} from "@/components/electronAPI.js";
+import {dumpFlow, listNode} from "@/components/electronAPI.js";
 
 const { onInit, onNodeDragStop, addNodes, addEdges, removeNodes, removeEdges, setViewport, toObject, fitView, updateNode } = useVueFlow()
 const { layout } = useLayout();
@@ -31,11 +31,11 @@ const query = ref({});
 const env = inject("env");
 const focus = ref("");
 const focusList = ref([])
-const focusValue = computed({
-  get() {
-    return focus.value?.value || "";
-  }
-});
+const detailValue = ref("");
+const detailAllowCancel = ref(false);
+const detailAllowDelete = ref(false);
+const detailAllowSubmit = ref(false);
+const detailHeader = ref("");
 const nodeSearching = ref(false);
 const rendering = ref(false);
 const detailActive = ref(false);
@@ -124,7 +124,14 @@ async function renderFlow() {
     Message.error(error.message);
   }
 }
-
+async function dumpNodeList() {
+  try {
+    await dumpFlow();
+  } catch (error) {
+    console.error(error.message);
+    Message.error(error.message);
+  }
+}
 async function renderFlowAPI() {
   rendering.value = true;
   const minDurationPromise = sleep(1000);
@@ -168,13 +175,38 @@ function resetTransform() {
 }
 
 function addCustomNode() {
-  detailData.value = {};
+  detailValue.value = "";
+  detailAllowCancel.value = true;
+  detailAllowSubmit.value = true;
+  detailAllowDelete.value = false;
+  detailHeader.value = '新增节点';
   detailActive.value = true;
 }
 
+function duplicateCustomNode() {
+  if (focus.value == null || focus.value === "") {
+    Message.warning("请选中焦点");
+  } else {
+    detailValue.value = focus.value.value;
+    detailAllowCancel.value = true;
+    detailAllowSubmit.value = true;
+    detailAllowDelete.value = false;
+    detailHeader.value = '复制节点';
+    detailActive.value = true;
+  }
+}
+
 function modifyCustomNode() {
-  detailData.value = {};
-  detailActive.value = true;
+  if (focus.value == null || focus.value === "") {
+    Message.warning("请选中焦点");
+  } else {
+    detailValue.value = focus.value.value;
+    detailAllowCancel.value = true;
+    detailAllowSubmit.value = true;
+    detailAllowDelete.value = true;
+    detailHeader.value = `修改节点${focus.value.label}`;
+    detailActive.value = true;
+  }
 }
 
 </script>
@@ -198,13 +230,19 @@ function modifyCustomNode() {
     </template>
     <Controls position="top-left">
       <ControlButton title="DEBUG" @click="logToObject">
-        <Icon type="ios-code-working" />
+        <Icon type="ios-bug-outline" />
       </ControlButton>
       <ControlButton title="新增" @click="addCustomNode">
         <Icon type="ios-add" />
       </ControlButton>
       <ControlButton title="修改" @click="modifyCustomNode">
-        <Icon type="ios-document-outline" />
+        <Icon type="ios-create-outline" />
+      </ControlButton>
+      <ControlButton title="复制" @click="duplicateCustomNode">
+        <Icon type="ios-copy-outline" />
+      </ControlButton>
+      <ControlButton title="落盘" @click="dumpNodeList">
+        <Icon type="ios-download-outline" />
       </ControlButton>
     </Controls>
     <Panel position="top-right">
@@ -226,9 +264,9 @@ function modifyCustomNode() {
   <Drawer :closable="false" width="640" v-model="openDetail">
     <DynamicComponent :componentData="drawerData"></DynamicComponent>
   </Drawer>
-  <VueFlowNodeDetail :node-value="focusValue" :active="detailActive"
-                     :allow-cancel="true" :allow-delete="true"
-                     :allow-submit="true" header="testing" />
+  <VueFlowNodeDetail :node-value="detailValue" :active="detailActive"
+                     :allow-cancel="detailAllowCancel" :allow-delete="detailAllowDelete"
+                     :allow-submit="detailAllowSubmit" :header="detailHeader" />
 </template>
 <style>
 /* 小地图 */

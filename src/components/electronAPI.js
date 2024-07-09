@@ -10,3 +10,15 @@ export async function getNode(keyword) {
 export async function fetchJson(filename) {
     return await window.electron.fetchData("json", {"filename": filename});
 }
+
+export async function dumpFlow() {
+    return await window.electron.fetchData("dumpFlow", {});
+}
+
+export async function deleteNode(node) {
+    return await window.electron.fetchData("deleteNode", {"node": node});
+}
+
+export async function addOrUpdateNode(node) {
+    return await window.electron.fetchData("addOrUpdateNode", {"node": node});
+}

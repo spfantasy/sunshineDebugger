@@ -43,7 +43,7 @@ app.post('/api/json', async (req, res) => {
 });
 
 const flowMetaJson = path.resolve(__dirname, 'config/flowMeta.json5');
-const flowMeta = JSON5.parse(fs.readFileSync(flowMetaJson, 'utf8'));
+let flowMeta = JSON5.parse(fs.readFileSync(flowMetaJson, 'utf8'));
 if (hasCycle(flowMeta)) {
     throw "flowMeta.json5 加载异常：数据成环";
 }
@@ -61,6 +61,31 @@ app.post('/api/renderFlow', async(req,res) => {
         res.status(500).json({ message: error.message, name: error.name, stack: error.stack});
     }
 });
+
+app.post('/api/dumpFlow', async(req, res) => {
+    try {
+        fs.writeFileSync(flowMetaJson, JSON5.stringify(flowMeta, null, 2), 'utf8');
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+})
+
+app.post('/api/deleteNode', async(req, res) => {
+    try {
+        flowMeta = flowMeta.filter(node => node.value.toLowerCase() !== req.body.node.value.toLowerCase());
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+})
+
+app.post('/api/addOrUpdateNode', async(req, res) => {
+    try {
+        flowMeta = flowMeta.filter(node => node.value.toLowerCase() !== req.body.node.value.toLowerCase());
+        flowMeta.push(req.body.node);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+})
 
 app.post('/api/listNode', async (req, res) => {
     try {
