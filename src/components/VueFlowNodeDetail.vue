@@ -193,7 +193,6 @@ const successExpressionSwitch = computed({
 function enableInDegree() {
   inDegree.value = data.value.parents?.length || 0;
 }
-const defaultLabel = ref([]);
 async function loadNode(nodeName) {
   try {
     data.value = await getNode(nodeName);
@@ -332,7 +331,7 @@ const cmOptions = reactive({
               <Input v-model="data.value" placeholder="inputNode"/>
             </Col>
             <Col flex="1">
-              <Tooltip max-width="200" content="节点主键，请输入只包含字母数字的内容" placement="top">
+              <Tooltip transfer max-width="200" content="节点主键，请输入只包含字母数字的内容" placement="top">
                 <Icon type="ios-help-circle"/>
               </Tooltip>
             </Col>
@@ -345,7 +344,7 @@ const cmOptions = reactive({
               <Input v-model="data.label" placeholder="模块-场景-子模块-流程" />
             </Col>
             <Col flex="1">
-              <Tooltip max-width="200" content="节点中文名称，如‘模块-场景-子模块-流程’" placement="top">
+              <Tooltip transfer max-width="200" content="节点中文名称，如‘模块-场景-子模块-流程’" placement="top">
                 <Icon type="ios-help-circle"/>
               </Tooltip>
             </Col>
@@ -360,28 +359,21 @@ const cmOptions = reactive({
               </RadioGroup>
             </Col>
             <Col>
-              <Tooltip max-width="200" content="输入节点：包含搜索框（备选项=choices，选中项=selection），请提供choices:[{value: xxx, label: yyy}] 和 selection: someValue；输出节点：包含摘要abstract和边栏，请提供abstract=someString和边栏json" placement="top">
+              <Tooltip transfer max-width="200" content="输入节点：包含搜索框（备选项=choices，选中项=selection），请提供choices:[{value: xxx, label: yyy}] 和 selection: someValue；输出节点：包含摘要abstract和边栏，请提供abstract=someString和边栏json" placement="top">
                 <Icon type="ios-help-circle"/>
               </Tooltip>
             </Col>
           </Row>
         </FormItem>
         <FormItem prop="parents" label="父节点">
-          <Row>
-            <p>data.parents=|{{data.parents}}|</p>
-          </Row>
-          <Row>
-            <p>defaultLabel=|{{defaultLabel}}|</p>
-          </Row>
           <Row :gutter="16">
             <Col flex="9">
-              <Select v-model="data.parents" multiple :default-label="defaultLabel"
-                      :loading="loading" filterable>
+              <Select v-model="data.parents" multiple filterable>
                 <Option v-for="(option, index) in parentList" :value="option.value" :key="index">{{option.label}}</Option>
               </Select>
             </Col>
             <Col flex="1">
-              <Tooltip max-width="200" content="父节点会阻碍节点的运行（例如存在数据上的依赖），当成功的父节点数>=入度时触发该节点的执行" placement="top">
+              <Tooltip transfer max-width="200" content="父节点会阻碍节点的运行（例如存在数据上的依赖），当成功的父节点数>=入度时触发该节点的执行" placement="top">
                 <Icon type="ios-help-circle"/>
               </Tooltip>
             </Col>
@@ -399,7 +391,7 @@ const cmOptions = reactive({
               </div>
             </Col>
             <Col>
-              <Tooltip max-width="200" content="默认为父节点数目（父节点都成功后触发该节点），覆盖后，x个父节点成功后即可触发该节点执行（请自行保证数据依赖关系）" placement="top">
+              <Tooltip transfer max-width="200" content="默认为父节点数目（父节点都成功后触发该节点），覆盖后，x个父节点成功后即可触发该节点执行（请自行保证数据依赖关系）" placement="top">
                 <Icon type="ios-help-circle"/>
               </Tooltip>
             </Col>
@@ -411,7 +403,7 @@ const cmOptions = reactive({
               <Switch true-color="#19be6b" false-color="#ed4014" v-model="data.circuitBreaker"/>
             </Col>
             <Col>
-              <Tooltip max-width="200" content="配置熔断后，执行失败不显示该节点（适用于分支判断逻辑）；此特性也会影响焦点的展示逻辑" placement="top">
+              <Tooltip transfer max-width="200" content="配置熔断后，执行失败不显示该节点以及下游节点（适用于分支判断逻辑，为N选1的节点都配置为熔断）；此特性也会影响焦点的展示逻辑" placement="top">
                 <Icon type="ios-help-circle"/>
               </Tooltip>
             </Col>
@@ -430,7 +422,7 @@ const cmOptions = reactive({
                       </Select>
                     </Col>
                     <Col>
-                      <Tooltip max-width="200" content="配置文件中当前环境的数据源(MYSQL/REDIS/...)" placement="top">
+                      <Tooltip transfer max-width="200" content="配置文件中当前环境的数据源(MYSQL/REDIS/...)" placement="top">
                         <Icon type="ios-help-circle"/>
                       </Tooltip>
                     </Col>
@@ -444,7 +436,7 @@ const cmOptions = reactive({
                              placeholder="SELECT CAST(id AS CHAR) AS value, CONCAT('标签', string_field) AS label FROM my_table WHERE `key` = ?"/>
                     </Col>
                     <Col flex="1">
-                      <Tooltip max-width="200" content="用`?`替换变量的查询语句" placement="top">
+                      <Tooltip transfer max-width="200" content="用`?`替换变量的查询语句" placement="top">
                         <Icon type="ios-help-circle"/>
                       </Tooltip>
                     </Col>
@@ -457,7 +449,7 @@ const cmOptions = reactive({
                         <Input v-model="retriever.queryParams[i3]" />
                       </Col>
                       <Col flex="1">
-                        <Tooltip v-if="i3 === 0" max-width="200" content="变量名称或表达式， 如ctx.inputModule1.selection 或1+1" placement="top">
+                        <Tooltip transfer v-if="i3 === 0" max-width="200" content="变量名称或表达式， 如ctx.inputModule1.selection 或1+1" placement="top">
                           <Icon type="ios-help-circle"/>
                         </Tooltip>
                       </Col>
@@ -477,7 +469,7 @@ const cmOptions = reactive({
                                placeholder="ctx.inputModule2.selection = ctx.inputModule2?.queryResult?.[0]?.value"/>
                       </Col>
                       <Col flex="1">
-                        <Tooltip max-width="200" content="将查询结果写回ctx，query结果默认暂存在queryResult中" placement="top">
+                        <Tooltip transfer max-width="200" content="将查询结果写回ctx，query结果默认暂存在queryResult中" placement="top">
                           <Icon type="ios-help-circle"/>
                         </Tooltip>
                       </Col>
@@ -493,7 +485,7 @@ const cmOptions = reactive({
                                type="textarea"  placeholder="不填默认总是生效"/>
                       </Col>
                       <Col flex="1">
-                        <Tooltip max-width="200" content="写入逻辑生效的条件，如ctx.inputModule2.selection === ctx.inputModule2.selection" placement="top">
+                        <Tooltip transfer max-width="200" content="写入逻辑生效的条件，如ctx.inputModule2.selection === ctx.inputModule2.selection" placement="top">
                           <Icon type="ios-help-circle"/>
                         </Tooltip>
                       </Col>
@@ -523,7 +515,7 @@ const cmOptions = reactive({
               />
             </Col>
             <Col flex="1">
-              <Tooltip max-width="200" content="用于渲染边栏的内容，支持view-ui-plus的Row, Col, Grid, GridItem, Divider, Ellipsis, Tabs, TabPane, Timeline, TimelineItem, Numeral组件，以及html默认组件。请参考示例中的逻辑" placement="top">
+              <Tooltip transfer max-width="200" content="用于渲染边栏的内容，支持view-ui-plus的Row, Col, Grid, GridItem, Divider, Ellipsis, Tabs, TabPane, Timeline, TimelineItem, Numeral组件，以及html默认组件。请参考示例中的逻辑" placement="top">
                 <Icon type="ios-help-circle"/>
               </Tooltip>
             </Col>
@@ -545,7 +537,7 @@ const cmOptions = reactive({
               <Input style="width: 400px" v-if="successExpressionSwitch" v-model="isSuccessExpression" placeholder="1 + 1 === 2 或 ctx.currentNode.a.b === 'something'"/>
             </Col>
             <Col>
-              <Tooltip max-width="200" content="当前节点成功后才可以触发下游节点，默认总是成功" placement="top">
+              <Tooltip transfer max-width="200" content="当前节点成功后才可以触发下游节点，默认总是成功" placement="top">
                 <Icon type="ios-help-circle"/>
               </Tooltip>
             </Col>
