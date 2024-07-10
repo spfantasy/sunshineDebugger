@@ -27,6 +27,12 @@ import {addOrUpdateNode, deleteNode, fetchJson, getNode, listNode} from "@/compo
 
 window.jsonlint = jsonlint;
 
+const emit = defineEmits(['on-panel-close']);
+
+async function closePanel () {
+  emit('on-panel-close', false);
+};
+
 const props = defineProps({
   header: {
     type: String,
@@ -271,11 +277,10 @@ async function submit() {
     console.log(data.value);
     await addOrUpdateNode(JSON5.stringify(data.value));
     loading.value = false;
-    props.active = false;
     Message.info("新增/修改节点成功");
+    await closePanel();
   } catch (error) {
     loading.value = false;
-    props.active = true;
     console.error(error.message);
     Message.error(error.message);
   }
@@ -287,19 +292,18 @@ async function del() {
     console.log(data.value);
     await deleteNode(data.value.value);
     loading.value = false;
-    props.active = false;
     Message.info("删除节点成功");
+    await closePanel();
   } catch (error) {
     loading.value = false;
-    props.active = true;
     console.error(error.message);
     Message.error(error.message);
   }
 }
 
-function cancel() {
+async function cancel() {
   loading.value = false;
-  props.active = false;
+  await closePanel();
 }
 
 // https://rennzhang.github.io/codemirror-editor-vue3/zh-CN/guide/getting-started
@@ -316,7 +320,7 @@ const cmOptions = reactive({
 </script>
 
 <template>
-  <Modal v-model="props.active" width="80" :mask-closable="false" @on-visible-change="fillData">
+  <Modal v-model="props.active" width="80" :mask-closable="false" @on-visible-change="fillData" :closable="false">
     <template #header>
       <p style="text-align:center">
         <span>{{ props.header }}</span>

@@ -39,7 +39,6 @@ const detailHeader = ref("");
 const nodeSearching = ref(false);
 const rendering = ref(false);
 const detailActive = ref(false);
-const detailData = ref({});
 // const dark = ref(false)
 
 /**
@@ -100,14 +99,15 @@ async function renderFlow() {
         query.value[node.id] = node.data.selection;
       }
     })
-    console.log("render flow query="+JSON5.stringify(query.value));
     removeNodes(nodes.value);
     removeEdges(edges.value);
-    ctx.value = await window.electron.fetchData("renderFlow", {
+    const params = {
       "env": targetEnv.value.value,
       "query": JSON5.stringify(query.value),
       "focus": focus.value.value,
-    });
+    }
+    console.log("render flow params="+JSON5.stringify(params));
+    ctx.value = await window.electron.fetchData("renderFlow", params);
     addNodes(ctx.value.nodes);
     addEdges(ctx.value.edges);
     query.value = {};
@@ -210,6 +210,10 @@ async function modifyCustomNode() {
   }
 }
 
+async function closePanel() {
+  detailActive.value = false;
+}
+
 </script>
 
 <template>
@@ -265,7 +269,7 @@ async function modifyCustomNode() {
   <Drawer :closable="false" width="640" v-model="openDetail">
     <DynamicComponent :componentData="drawerData"></DynamicComponent>
   </Drawer>
-  <VueFlowNodeDetail :node-value="detailValue" :active="detailActive"
+  <VueFlowNodeDetail :node-value="detailValue" :active="detailActive" @on-panel-close="closePanel"
                      :allow-cancel="detailAllowCancel" :allow-delete="detailAllowDelete"
                      :allow-submit="detailAllowSubmit" :header="detailHeader" />
 </template>
