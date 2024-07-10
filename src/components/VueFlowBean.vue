@@ -127,6 +127,7 @@ async function renderFlow() {
 async function dumpNodeList() {
   try {
     await dumpFlow();
+    Message.success("已更新flowMeta.json5")
   } catch (error) {
     console.error(error.message);
     Message.error(error.message);
@@ -174,7 +175,7 @@ function resetTransform() {
   setViewport({ x: 0, y: 0, zoom: 1 })
 }
 
-function addCustomNode() {
+async function addCustomNode() {
   detailValue.value = "";
   detailAllowCancel.value = true;
   detailAllowSubmit.value = true;
@@ -183,7 +184,7 @@ function addCustomNode() {
   detailActive.value = true;
 }
 
-function duplicateCustomNode() {
+async function duplicateCustomNode() {
   if (focus.value == null || focus.value === "") {
     Message.warning("请选中焦点");
   } else {
@@ -196,7 +197,7 @@ function duplicateCustomNode() {
   }
 }
 
-function modifyCustomNode() {
+async function modifyCustomNode() {
   if (focus.value == null || focus.value === "") {
     Message.warning("请选中焦点");
   } else {
@@ -232,17 +233,17 @@ function modifyCustomNode() {
       <ControlButton title="DEBUG" @click="logToObject">
         <Icon type="ios-bug-outline" />
       </ControlButton>
+      <ControlButton title="落盘" @click="dumpNodeList">
+        <Icon type="ios-download-outline" />
+      </ControlButton>
       <ControlButton title="新增" @click="addCustomNode">
         <Icon type="ios-add" />
       </ControlButton>
-      <ControlButton title="修改" @click="modifyCustomNode">
+      <ControlButton title="修改" @click="modifyCustomNode" v-if="focus !== ''">
         <Icon type="ios-create-outline" />
       </ControlButton>
-      <ControlButton title="复制" @click="duplicateCustomNode">
+      <ControlButton title="复制" @click="duplicateCustomNode" v-if="focus !== ''">
         <Icon type="ios-copy-outline" />
-      </ControlButton>
-      <ControlButton title="落盘" @click="dumpNodeList">
-        <Icon type="ios-download-outline" />
       </ControlButton>
     </Controls>
     <Panel position="top-right">

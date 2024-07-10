@@ -65,6 +65,7 @@ app.post('/api/renderFlow', async(req,res) => {
 app.post('/api/dumpFlow', async(req, res) => {
     try {
         fs.writeFileSync(flowMetaJson, JSON5.stringify(flowMeta, null, 2), 'utf8');
+        res.status(200).json();
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -72,7 +73,8 @@ app.post('/api/dumpFlow', async(req, res) => {
 
 app.post('/api/deleteNode', async(req, res) => {
     try {
-        flowMeta = flowMeta.filter(node => node.value.toLowerCase() !== req.body.node.value.toLowerCase());
+        flowMeta = flowMeta.filter(node => node.value.toLowerCase() !== req.body.nodeValue.toLowerCase());
+        res.status(200).json();
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -80,8 +82,10 @@ app.post('/api/deleteNode', async(req, res) => {
 
 app.post('/api/addOrUpdateNode', async(req, res) => {
     try {
-        flowMeta = flowMeta.filter(node => node.value.toLowerCase() !== req.body.node.value.toLowerCase());
-        flowMeta.push(req.body.node);
+        const newNode = JSON5.parse(req.body.node);
+        flowMeta = flowMeta.filter(node => node.value.toLowerCase() !== newNode.value.toLowerCase());
+        flowMeta.push(newNode);
+        res.status(200).json();
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -89,15 +93,24 @@ app.post('/api/addOrUpdateNode', async(req, res) => {
 
 app.post('/api/listNode', async (req, res) => {
     try {
-        res.json(flowMeta
-            .filter(
-                node => node.value.toLowerCase().includes(req.body.keyword.toLowerCase())
-                    || node.label.toLowerCase().includes(req.body.keyword.toLowerCase())
-            ).map(node => ({
-                value: node.value,
-                label: node.label,
-            }))
-        );
+        if (req.body.keyword == null || req.body.keyword === '') {
+            res.json(flowMeta
+                .map(node => ({
+                    value: node.value,
+                    label: node.label,
+                }))
+            );
+        } else {
+            res.json(flowMeta
+                .filter(
+                    node => node.value.toLowerCase().includes(req.body.keyword.toLowerCase())
+                        || node.label.toLowerCase().includes(req.body.keyword.toLowerCase())
+                ).map(node => ({
+                    value: node.value,
+                    label: node.label,
+                }))
+            );
+        }
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

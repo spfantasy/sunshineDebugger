@@ -169,7 +169,7 @@
   },
   {
     "value": "outputModule5",
-    "label": "输出4",
+    "label": "输出5",
     "type": "output",
     "parents": ["outputModule1"],
   }

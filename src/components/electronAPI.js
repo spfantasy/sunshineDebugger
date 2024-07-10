@@ -15,8 +15,8 @@ export async function dumpFlow() {
     return await window.electron.fetchData("dumpFlow", {});
 }
 
-export async function deleteNode(node) {
-    return await window.electron.fetchData("deleteNode", {"node": node});
+export async function deleteNode(nodeValue) {
+    return await window.electron.fetchData("deleteNode", {"nodeValue": nodeValue});
 }
 
 export async function addOrUpdateNode(node) {
