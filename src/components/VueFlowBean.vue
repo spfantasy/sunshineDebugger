@@ -3,7 +3,6 @@ import {nextTick, inject, ref, onMounted, computed} from 'vue'
 import { VueFlow, useVueFlow, Panel } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { ControlButton, Controls } from '@vue-flow/controls'
-import { MiniMap } from '@vue-flow/minimap'
 import '@vue-flow/core/dist/style.css';
 import '@vue-flow/core/dist/theme-default.css';
 import '@vue-flow/controls/dist/style.css';
@@ -29,7 +28,7 @@ const drawerData = ref({});
 const ctx = ref({});
 const query = ref({});
 const env = inject("env");
-const focus = ref("");
+const focus = ref(null);
 const focusList = ref([])
 const detailValue = ref("");
 const detailAllowCancel = ref(false);
@@ -52,7 +51,10 @@ onInit((vueFlowInstance) => {
   vueFlowInstance.fitView()
 })
 
-onMounted(renderFlow);
+onMounted(() => {
+  renderFlow();
+  searchFocusNode("");
+});
 /**
  * onNodeDragStop is called when a node is done being dragged
  *
@@ -104,7 +106,7 @@ async function renderFlow() {
     const params = {
       "env": targetEnv.value.value,
       "query": JSON5.stringify(query.value),
-      "focus": focus.value.value,
+      "focus": focus.value,
     }
     console.log("render flow params="+JSON5.stringify(params));
     ctx.value = await window.electron.fetchData("renderFlow", params);
@@ -144,17 +146,13 @@ async function searchFocusNode(keyword) {
   try {
     nodeSearching.value = true;
     focusList.value = await listNode(keyword);
+    console.log(focusList.value);
     nodeSearching.value = false;
   } catch (error) {
     nodeSearching.value = false;
     console.error(error.message);
     Message.error(error.message);
   }
-}
-
-function updateFocus(value) {
-  focus.value = value;
-  console.log(focus.value);
 }
 
 function renderDrawer(data) {
@@ -212,6 +210,7 @@ async function modifyCustomNode() {
 
 async function closePanel() {
   detailActive.value = false;
+  await searchFocusNode("");
 }
 
 </script>
@@ -246,18 +245,18 @@ async function closePanel() {
       <ControlButton title="修改" @click="modifyCustomNode" v-if="focus !== ''">
         <Icon type="ios-create-outline" />
       </ControlButton>
-      <ControlButton title="复制" @click="duplicateCustomNode" v-if="focus !== ''">
+      <ControlButton title="复制" @click="duplicateCustomNode" v-if="focus !== '' && focus != null">
         <Icon type="ios-copy-outline" />
       </ControlButton>
     </Controls>
     <Panel position="top-right">
       <Space>
         焦点：
-        <Select @on-select="updateFocus" :remote-method="searchFocusNode" :loading="nodeSearching" filterable
+        <Select v-model="focus" filterable
                 prefix="ios-locate-outline" style="width:300px; text-align:left" clearable>
-          <Option v-for="item of focusList" :value="item.value" :label="item.label" :key="item.value">
-            <span>{{ item.label }}</span>
-            <span style="float:right;color:#ccc">{{ item.value }}</span>
+          <Option v-for="(option, index) in focusList" :value="option.value" :label="option.label" :key="index">
+            <span>{{ option.label }}</span>
+            <span style="float:right;color:#ccc">{{ option.value }}</span>
           </Option>
         </Select>
       </Space>
