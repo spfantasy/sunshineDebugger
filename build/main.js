@@ -7,6 +7,35 @@ import JSON5 from 'json5';
 
 // 获取 __filename 和 __dirname
 const __dirname = app.getAppPath();
+const isProduction = process.env.NODE_ENV === 'prod';
+
+if (isProduction) {
+    // 定义日志文件路径
+    const logFilePath = path.join(app.getPath('userData'), 'app.log');
+
+    // 创建写入流
+    const logStream = fs.createWriteStream(logFilePath, { flags: 'a' });
+
+    // 重定向 console.log, console.error 等日志输出到文件
+    const originalConsoleLog = console.log;
+    const originalConsoleError = console.error;
+    const originalConsoleWarn = console.warn;
+
+    console.log = (...args) => {
+        originalConsoleLog.apply(console, args);
+        logStream.write(`[LOG] ${new Date().toISOString()} ${args.join(' ')}\n`);
+    };
+
+    console.error = (...args) => {
+        originalConsoleError.apply(console, args);
+        logStream.write(`[ERROR] ${new Date().toISOString()} ${args.join(' ')}\n`);
+    };
+
+    console.warn = (...args) => {
+        originalConsoleWarn.apply(console, args);
+        logStream.write(`[WARN] ${new Date().toISOString()} ${args.join(' ')}\n`);
+    };
+}
 
 let config;
 let serverProcess;
@@ -25,7 +54,17 @@ function createWindow() {
     });
 
     win.loadFile(path.resolve(__dirname, 'dist/src/index.html'));
-    win.webContents.openDevTools();
+    if (!isProduction) {
+        win.webContents.openDevTools();
+    }
+
+    win.on('closed', () => {
+        console.log('Window closed');
+    });
+
+    win.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+        console.error(`Failed to load: ${errorDescription} (code: ${errorCode})`);
+    });
 }
 
 async function checkBackendStatus() {
@@ -91,4 +130,16 @@ ipcMain.handle('fetch_data', async (event, endpoint, params) => {
         console.error('Error fetching data from server:', error);
         throw JSON5.stringify(error.response.data);
     }
+});
+
+app.on('before-quit', () => {
+    console.log('App is about to quit');
+});
+
+process.on('uncaughtException', (error) => {
+    console.error(`Uncaught Exception: ${error.stack || error}`);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error(`Unhandled Rejection at: ${promise}, reason: ${reason.stack || reason}`);
 });

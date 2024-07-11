@@ -83,7 +83,7 @@ function handleCreate(userDefinedValue) {
     <Space>
       <Button shape="circle" @click="lockQuerySwitch" size="small" icon="ios-checkmark" v-if="locked" type="success"/>
       <Button shape="circle" @click="lockQuerySwitch" size="small" icon="ios-lock" v-if="!locked"/>
-      <Select v-model="selection" size="small" style="width:100px"
+      <Select v-model="selection" size="small" style="width:100px" transfer
               :disabled="locked" @on-change="flowInputChange(props.data.value)"
               filterable allow-create @on-create="handleCreate">
         <Option v-for="item in props.data.choices" :value="item.value" :label="item.value">

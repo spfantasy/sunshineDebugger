@@ -1,13 +1,13 @@
 {
-  "name": "vueflowmonkey",
-  "version": "0.0.0",
+  "name": "sunshinedebugger",
+  "version": "1.0.0",
   "main": "build/main.js",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "start": "electron .",
-    "dist": "electron-builder"
+    "start": "NODE_ENV=dev electron .",
+    "dist": "NODE_ENV=prod electron-builder"
   },
   "dependencies": {
     "@codemirror/lang-json": "^6.0.1",
