@@ -16,7 +16,7 @@ import {
 import {ref, reactive, computed, onMounted, inject} from "vue";
 import Codemirror from "codemirror-editor-vue3";
 import "codemirror/theme/yeti.css"
-import jsonlint from "jsonlint-mod-fixed";
+import jsonlint from "jsonlint-mod";
 import "codemirror/mode/javascript/javascript.js";
 import "codemirror/addon/lint/lint.css";
 import "codemirror/addon/lint/lint.js";
