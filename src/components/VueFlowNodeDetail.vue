@@ -14,18 +14,11 @@ import {
   Switch, Tooltip
 } from "view-ui-plus";
 import {ref, reactive, computed, onMounted, inject} from "vue";
-import Codemirror from "codemirror-editor-vue3";
-import "codemirror/theme/yeti.css"
-import jsonlint from "jsonlint-mod";
-import "codemirror/mode/javascript/javascript.js";
-import "codemirror/addon/lint/lint.css";
-import "codemirror/addon/lint/lint.js";
-import "codemirror/addon/lint/json-lint";
+import CodeMirrorComponent from "@/components/CodeMirrorComponent.vue";
 
 import JSON5 from "json5";
 import {addOrUpdateNode, deleteNode, fetchJson, getNode, listNode} from "@/components/electronAPI.js";
 
-window.jsonlint = jsonlint;
 
 const emit = defineEmits(['on-panel-close']);
 
@@ -509,14 +502,15 @@ const cmOptions = reactive({
         <FormItem prop="inference.component" label="边栏" v-if="data.type === 'output'">
           <Row justify="center" align="middle" :gutter="16">
             <Col flex="9">
-              <Codemirror
-                  v-model:value="componentString"
-                  :options="cmOptions"
-                  height="400px"
-                  width="100%"
-                  class="cm-component"
-                  :border="true"
-              />
+<!--              <Codemirror-->
+<!--                  v-model:value="componentString"-->
+<!--                  :options="cmOptions"-->
+<!--                  height="400px"-->
+<!--                  width="100%"-->
+<!--                  class="cm-component"-->
+<!--                  :border="true"-->
+<!--              />-->
+              <CodeMirrorComponent v-model="componentString"/>
             </Col>
             <Col flex="1">
               <Tooltip transfer max-width="200" content="用于渲染边栏的内容，支持view-ui-plus的Row, Col, Grid, GridItem, Divider, Ellipsis, Tabs, TabPane, Timeline, TimelineItem, Numeral组件，以及html默认组件。请参考示例中的逻辑" placement="top">

@@ -186,7 +186,7 @@ async function duplicateCustomNode() {
   if (focus.value == null || focus.value === "") {
     Message.warning("请选中焦点");
   } else {
-    detailValue.value = focus.value.value;
+    detailValue.value = focus.value;
     detailAllowCancel.value = true;
     detailAllowSubmit.value = true;
     detailAllowDelete.value = false;
@@ -199,11 +199,11 @@ async function modifyCustomNode() {
   if (focus.value == null || focus.value === "") {
     Message.warning("请选中焦点");
   } else {
-    detailValue.value = focus.value.value;
+    detailValue.value = focus.value;
     detailAllowCancel.value = true;
     detailAllowSubmit.value = true;
     detailAllowDelete.value = true;
-    detailHeader.value = `修改节点${focus.value.label}`;
+    detailHeader.value = `修改节点${focus.value}`;
     detailActive.value = true;
   }
 }

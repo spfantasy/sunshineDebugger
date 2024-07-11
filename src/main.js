@@ -3,11 +3,16 @@ import App from './App.vue'
 import router from './router/index.js'
 import ViewUIPlus from 'view-ui-plus'
 import 'view-ui-plus/dist/styles/viewuiplus.css'
-import { InstallCodemirro } from "codemirror-editor-vue3"
+import {basicSetup} from "codemirror";
+import VueCodemirror from 'vue-codemirror'
 
 const app = createApp(App)
 
 app.use(router)
-    .use(InstallCodemirro, { componentName: "jsonInput" })
+    .use(VueCodemirror, {
+        tabSize: 2,
+        placeholder: 'Code goes here...',
+        extensions: [basicSetup]
+    })
     .use(ViewUIPlus)
     .mount('#app')
