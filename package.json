@@ -72,7 +72,10 @@
       }
     },
     "win": {
-      "target": "portable"
+      "target": ["portable"]
+    },
+    "portable": {
+      "artifactName": "sunshineDebugger.exe"
     }
   }
 }
