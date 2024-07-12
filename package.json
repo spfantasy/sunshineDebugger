@@ -7,7 +7,7 @@
   "scripts": {
     "build": "vite build",
     "start": "NODE_ENV=dev electron .",
-    "dist": "NODE_ENV=prod electron-builder --win portable --x64 --ia32"
+    "dist": "NODE_ENV=prod electron-builder --win portable --x64"
   },
   "dependencies": {
     "@codemirror/lang-json": "^6.0.1",
