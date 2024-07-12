@@ -65,15 +65,14 @@
     "directories": {
       "buildResources": "build"
     },
-    "asar": false,
+    "asar": true,
     "extraMetadata": {
       "env": {
         "NODE_ENV": "prod"
       }
     },
     "win": {
-      "target": "portable",
-      "arch": ["x64", "ia32"]
+      "target": "portable"
     }
   }
 }
