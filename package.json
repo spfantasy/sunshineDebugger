@@ -7,7 +7,7 @@
   "scripts": {
     "build": "vite build",
     "start": "NODE_ENV=dev electron .",
-    "dist": "NODE_ENV=prod electron-builder"
+    "dist": "NODE_ENV=prod electron-builder --win portable --x64 --ia32"
   },
   "dependencies": {
     "@codemirror/lang-json": "^6.0.1",
@@ -65,15 +65,15 @@
     "directories": {
       "buildResources": "build"
     },
-    "asar": true,
-    "win": {
-      "target": "nsis"
+    "asar": false,
+    "extraMetadata": {
+      "env": {
+        "NODE_ENV": "prod"
+      }
     },
-    "nsis": {
-      "oneClick": false,
-      "perMachine": true,
-      "allowElevation": true,
-      "allowToChangeInstallationDirectory": true
+    "win": {
+      "target": "portable",
+      "arch": ["x64", "ia32"]
     }
   }
 }
