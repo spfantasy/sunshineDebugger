@@ -12,6 +12,7 @@ const env = inject("env");
 
 const fetchTargetData = async () => {
   try {
+    await new Promise(resolve => setTimeout(resolve, 1000));
     // 加载系统配置
     env.value =  await window.electron.fetchData("json", {"filename": "env.json5"});
     console.log(env.value);

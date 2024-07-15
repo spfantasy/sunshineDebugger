@@ -54,9 +54,9 @@ function createWindow() {
     });
 
     win.loadFile(path.resolve(__dirname, 'dist/src/index.html'));
-    if (!isProduction) {
-        win.webContents.openDevTools();
-    }
+    // if (!isProduction) {
+    //     win.webContents.openDevTools();
+    // }
 
     win.on('closed', () => {
         console.log('Window closed');
@@ -102,7 +102,7 @@ app.whenReady().then(() => {
         }
     });
 
-    waitForBackend().then(() => createWindow());
+    createWindow();
 });
 
 app.on('window-all-closed', () => {
